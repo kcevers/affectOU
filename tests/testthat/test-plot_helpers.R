@@ -133,7 +133,7 @@ test_that("get_layout respects mfrow in user_args", {
 test_that("get_layout errors when layout is too small", {
   expect_error(
     get_layout(10, list(nrow = 2, ncol = 2)),
-    "smaller than required"
+    class = "affectOU_error_layout_too_small"
   )
 })
 
@@ -197,7 +197,7 @@ test_that("get_lims errors on mismatched list length", {
 
   expect_error(
     get_lims(NULL, ndim = 3, nsim = 1, lim = lim),
-    "does not match"
+    class = "affectOU_error_lim_length"
   )
 })
 
@@ -280,7 +280,7 @@ test_that("prep_sim errors on invalid dimension indices", {
 
   expect_error(
     prep_sim(sim, which_dim = c(1, 5), which_sim = 1),
-    "must be between"
+    class = "affectOU_error_which_dim_out_of_range"
   )
 })
 
@@ -289,8 +289,8 @@ test_that("prep_sim errors on invalid simulation indices", {
   sim <- simulate(model, dt = 0.1, nsim = 1)
 
   expect_error(
-    prep_sim(sim, which_dim = 1:2, which_sim = c(1, 2)),
-    "must be between 1 and 1"
+    prep_sim(sim, which_dim = 1, which_sim = c(1, 2)),
+    class = "affectOU_error_which_sim_out_of_range"
   )
 })
 
@@ -300,7 +300,7 @@ test_that("prep_sim respects max_ndim constraint", {
 
   expect_error(
     prep_sim(sim, which_dim = 1:3, which_sim = 1, max_ndim = 2),
-    "exceeds maximum"
+    class = "affectOU_error_too_many_dims"
   )
 })
 
@@ -310,7 +310,7 @@ test_that("prep_sim respects max_nsim constraint", {
 
   expect_error(
     prep_sim(sim, which_dim = 1, which_sim = 1:3, max_nsim = 2),
-    "exceeds maximum"
+    class = "affectOU_error_too_many_sims"
   )
 })
 
@@ -351,7 +351,7 @@ test_that("prep_sim sorts and deduplicates which_sim", {
   sim <- simulate(model, dt = 0.1, nsim = 5, seed = 1)
 
   r_sorted <- prep_sim(sim, which_dim = 1, which_sim = c(1, 3, 5))
-  r_dup    <- prep_sim(sim, which_dim = 1, which_sim = c(5, 1, 3, 1))
+  r_dup <- prep_sim(sim, which_dim = 1, which_sim = c(5, 1, 3, 1))
 
   expect_equal(r_sorted[["data"]], r_dup[["data"]])
   expect_equal(r_sorted[["nsim"]], 3L)
@@ -373,7 +373,8 @@ test_that("sim_legend_entries labels use sim_ids", {
 
   # With original indices preserved
   leg_ids <- affectOU:::sim_legend_entries(3, lty_vec, col_sim,
-                                           sim_ids = c(1L, 5L, 11L))
+    sim_ids = c(1L, 5L, 11L)
+  )
   expect_equal(leg_ids$text, c("Sim 1", "Sim 5", "Sim 11"))
 })
 

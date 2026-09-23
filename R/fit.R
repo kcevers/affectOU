@@ -13,10 +13,13 @@ generics::fit
 #' via maximum likelihood. Currently limited to univariate (1D) models.
 #'
 #' @param object An object of class [`affectOU`][affectOU()].
-#' @param data Numeric vector of observed affect values.
-#' @param times Numeric vector of observation times.
+#' @param data A numeric vector of observed affect values. Must contain at
+#'   least 2 finite observations.
+#' @param times A numeric vector of observation times, the same length as
+#'   `data` and strictly increasing, since observations are ordered in time
+#'   with no repeated time points. If `NULL`, unit spacing is assumed.
 #'   If `NULL`, defaults to equally spaced times: 0, 1, 2, …
-#' @param method Character string specifying estimation method.
+#' @param method A single string naming the estimation method.
 #'   Currently only `"mle"` (i.e., maximum likelihood estimation)
 #'   is supported.
 #' @param start Optional named vector of starting values for parameters:
@@ -46,7 +49,6 @@ generics::fit
 #'
 #' @export
 #' @concept fit
-#' @aliases fit
 #' @examples
 #' model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
 #' sim <- simulate(model, stop = 1000, dt = 0.01, save_at = 0.01)
@@ -60,13 +62,32 @@ fit.affectOU <- function(object,
                          method = "mle",
                          start = NULL,
                          ...) {
-  method <- match.arg(method)
+  # --- Input validation ---
+  call <- rlang::current_env()
+
+  check_model_class(object, "affectOU", "an <affectOU> model", "object", call = call)
 
   ndim <- object[["ndim"]]
 
   # Only support 1D models
   if (ndim != 1) {
-    cli::cli_abort("{.fun fit} currently only supports one-dimensional OU models.")
+    cli::cli_abort(
+      c(
+        "{.fun fit} currently supports one-dimensional models only.",
+        "x" = "{.arg object} has {ndim} dimensions."
+      ),
+      call = call,
+      class = "affectOU_error_fit_multivariate"
+    )
+  }
+
+  rlang::check_string(method, arg = "method", call = call)
+  if (!identical(method, "mle")) {
+    cli::cli_abort(
+      '{.arg method} must be "mle", not {.val {method}}.',
+      call = call,
+      class = "affectOU_error_unsupported_method"
+    )
   }
 
   # Handle data format
@@ -74,60 +95,93 @@ fit.affectOU <- function(object,
     data <- as.vector(data)
   }
   if (!is.numeric(data) || !is.vector(data)) {
-    cli::cli_abort("{.arg data} must be a numeric vector.")
+    rlang::stop_input_type(data, "a numeric vector", arg = "data", call = call)
   }
   if (length(data) < 2) {
-    cli::cli_abort("{.arg data} must contain at least 2 observations.")
+    cli::cli_abort(
+      "{.arg data} must contain at least 2 observations, not {length(data)}.",
+      call = call,
+      class = "affectOU_error_too_few_observations"
+    )
   }
-  if (any(!is.finite(data))) {
-    cli::cli_abort("{.arg data} contains non-finite values.")
+  if (!all(is.finite(data))) {
+    cli::cli_abort(
+      c(
+        "{.arg data} must contain only finite values.",
+        "x" = "It contains {.code {non_finite_kinds(data)}} values.",
+        "i" = "Remove or impute missing observations before fitting."
+      ),
+      call = call,
+      class = "affectOU_error_not_finite"
+    )
   }
 
   # Default times: unit spacing
   if (is.null(times)) {
-    n_obs <- length(data)
-    times <- seq(0, n_obs - 1)
-    cli::cli_warn("{.arg times} not provided. Assuming unit spacing: 0, 1, 2, ...")
+    times <- seq(0, length(data) - 1)
+    cli::cli_warn(c(
+      "!" = "{.arg times} was not supplied; assuming unit spacing (0, 1, 2, ...).",
+      "i" = "Supply {.arg times} if the observations are unevenly spaced?"
+    ))
   }
+
+  # Type before length: a character `times` is a type problem, not a length one.
+  if (!is.numeric(times) || !is.vector(times)) {
+    rlang::stop_input_type(times, "a numeric vector", arg = "times", call = call)
+  }
+  check_all_finite(times, "times", call = call)
 
   n_obs <- length(data)
   if (n_obs != length(times)) {
-    cli::cli_abort("{.arg data} and {.arg times} must have the same length.")
+    cli::cli_abort(
+      c(
+        "{.arg data} and {.arg times} must be the same length.",
+        "x" = "{.arg data} has {n_obs} value{?s} and {.arg times} has {length(times)}."
+      ),
+      call = call,
+      class = "affectOU_error_length_mismatch"
+    )
   }
 
-  if (!is.numeric(times) || !is.vector(times)) {
-    cli::cli_abort("{.arg times} must be a numeric vector.")
-  }
-  if (any(!is.finite(times))) {
-    cli::cli_abort("{.arg times} contains non-finite values.")
-  }
   if (any(diff(times) <= 0)) {
-    cli::cli_abort("{.arg times} must be strictly increasing.")
+    bad <- which(diff(times) <= 0)[[1]] + 1L
+    cli::cli_abort(
+      c(
+        "{.arg times} must be strictly increasing.",
+        "x" = "{.code times[{bad}]} is not greater than {.code times[{bad - 1L}]}.",
+        "i" = "Observations must be ordered in time, with no repeated time points."
+      ),
+      call = call,
+      class = "affectOU_error_times_not_increasing"
+    )
   }
 
   if (!is.null(start)) {
     if (!is.numeric(start) || !is.vector(start)) {
-      cli::cli_abort("{.arg start} must be a numeric vector.")
+      rlang::stop_input_type(start, "a numeric vector", arg = "start", call = call)
     }
 
-    if (any(!is.finite(start))) {
-      cli::cli_abort("{.arg start} contains non-finite values.")
-    }
+    check_all_finite(start, "start", call = call)
 
     nms <- c("theta", "mu", "gamma")
     if (!all(nms %in% names(start)) || length(start) != length(nms)) {
       cli::cli_abort(
-        "{.arg start} must be a named vector with names: {.val {nms}}."
+        c(
+          "{.arg start} must be a named vector with names {.val {nms}}.",
+          "x" = if (is.null(names(start))) {
+            "It has no names."
+          } else {
+            "Its names are {.val {names(start)}}."
+          }
+        ),
+        call = call,
+        class = "affectOU_error_start_names"
       )
     }
   }
 
   # Perform MLE estimation
-  if (method == "mle") {
-    fit_result <- fit_ou_mle(data, times, start = start)
-  } else {
-    cli::cli_abort("Unsupported {.arg method}: {.val {method}}.")
-  }
+  fit_result <- fit_ou_mle(data, times, start = start)
 
   # Construct fit object
   fitted_object <- new_fit_affectOU(
@@ -146,7 +200,7 @@ fit.affectOU <- function(object,
     model = object
   )
 
-  validate_fit_affectOU(fitted_object)
+  validate_fit_affectOU(fitted_object, call = call)
 
   fitted_object
 }
@@ -185,9 +239,12 @@ new_fit_affectOU <- function(parameters, fitted_values, residuals, se,
 #' Check that an object of class `fit_affectOU` has the correct structure and content.
 #' @keywords internal
 #' @noRd
-validate_fit_affectOU <- function(x) {
+validate_fit_affectOU <- function(x, call = rlang::caller_env()) {
   if (!inherits(x, "fit_affectOU")) {
-    cli::cli_abort("Object must be of class {.cls fit_affectOU}.")
+    cli::cli_abort(
+      "Object must be of class {.cls fit_affectOU}.",
+      call = call, .internal = TRUE
+    )
   }
 
   # Check required components
@@ -199,57 +256,96 @@ validate_fit_affectOU <- function(x) {
   missing_components <- setdiff(required_components, names(x))
   if (length(missing_components) > 0) {
     cli::cli_abort(
-      "Missing components in {.cls fit_affectOU} object: {.val {missing_components}}."
+      "Missing components in {.cls fit_affectOU} object: {.val {missing_components}}.",
+      call = call, .internal = TRUE
     )
   }
 
   # Check components types
   if (!is.list(x$parameters) || length(x$parameters) != 3) {
-    cli::cli_abort("{.field parameters} must be a named list of length 3.")
+    cli::cli_abort(
+      "{.field parameters} must be a named list of length 3.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x$fitted_values) || !is.vector(x$fitted_values)) {
-    cli::cli_abort("{.field fitted_values} must be a numeric vector.")
+    cli::cli_abort(
+      "{.field fitted_values} must be a numeric vector.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x$residuals) || !is.vector(x$residuals)) {
-    cli::cli_abort("{.field residuals} must be a numeric vector.")
+    cli::cli_abort(
+      "{.field residuals} must be a numeric vector.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.list(x$se) || length(x$se) != 3) {
-    cli::cli_abort("{.field se} must be a named list of length 3.")
+    cli::cli_abort(
+      "{.field se} must be a named list of length 3.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x$log_likelihood) || length(x$log_likelihood) != 1) {
-    cli::cli_abort("{.field log_likelihood} must be a numeric scalar.")
+    cli::cli_abort(
+      "{.field log_likelihood} must be a single number.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x$rmse) || length(x$rmse) != 1) {
-    cli::cli_abort("{.field rmse} must be a numeric scalar.")
+    cli::cli_abort(
+      "{.field rmse} must be a single number.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x$convergence) || length(x$convergence) != 1) {
-    cli::cli_abort("{.field convergence} must be a numeric scalar.")
+    cli::cli_abort(
+      "{.field convergence} must be a single number.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x$nobs) || length(x$nobs) != 1) {
-    cli::cli_abort("{.field nobs} must be a numeric scalar.")
+    cli::cli_abort(
+      "{.field nobs} must be a single number.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x$data) || !is.vector(x$data)) {
-    cli::cli_abort("{.field data} must be a numeric vector.")
+    cli::cli_abort(
+      "{.field data} must be a numeric vector.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x$times) || !is.vector(x$times)) {
-    cli::cli_abort("{.field times} must be a numeric vector.")
+    cli::cli_abort(
+      "{.field times} must be a numeric vector.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.character(x$method) || length(x$method) != 1) {
-    cli::cli_abort("{.field method} must be a character scalar.")
+    cli::cli_abort(
+      "{.field method} must be a single string.",
+      call = call, .internal = TRUE
+    )
   }
   if (!inherits(x$model, "affectOU")) {
-    cli::cli_abort("{.field model} must be of class {.cls affectOU}.")
+    cli::cli_abort(
+      "{.field model} must be of class {.cls affectOU}.",
+      call = call, .internal = TRUE
+    )
   }
 
   # Check consistency data, fitted, and residuals
   if (length(x$data) != length(x$fitted_values)) {
     cli::cli_abort(
-      "Length of {.field data} and {.field fitted_values} must be the same."
+      "Length of {.field data} and {.field fitted_values} must be the same.",
+      call = call, .internal = TRUE
     )
   }
   if (length(x$residuals) != length(x$data)) {
     cli::cli_abort(
-      "Length of {.field residuals} and {.field data} must be the same."
+      "Length of {.field residuals} and {.field data} must be the same.",
+      call = call, .internal = TRUE
     )
   }
   if (!isTRUE(all.equal(
@@ -258,19 +354,22 @@ validate_fit_affectOU <- function(x) {
     check.attributes = FALSE
   ))) {
     cli::cli_abort(
-      "{.field data} must equal {.field fitted_values} + {.field residuals}."
+      "{.field data} must equal {.field fitted_values} + {.field residuals}.",
+      call = call, .internal = TRUE
     )
   }
 
   # Check consistency nobs, data, times
   if (length(x$data) != x$nobs) {
     cli::cli_abort(
-      "Length of {.field data} must equal {.field nobs}."
+      "Length of {.field data} must equal {.field nobs}.",
+      call = call, .internal = TRUE
     )
   }
   if (length(x$times) != x$nobs) {
     cli::cli_abort(
-      "Length of {.field times} must equal {.field nobs}."
+      "Length of {.field times} must equal {.field nobs}.",
+      call = call, .internal = TRUE
     )
   }
 
@@ -392,7 +491,7 @@ fit_ou_mle <- function(data, times, start) {
   idx <- which(!is.finite(start))
   if (length(idx) > 0) {
     cli::cli_warn(
-      "Non-finite starting values for parameters: {.val {names(start)[idx]}}. Using defaults instead."
+      "Non-finite starting values for {.val {names(start)[idx]}}; using defaults instead."
     )
     start[idx] <- c(log(0.5), 0, log(1))[idx]
   }
@@ -497,7 +596,6 @@ fit_ou_mle <- function(data, times, start) {
 #' @param ... Additional arguments (unused).
 #' @return An object of class `logLik` with `df` and `nobs` attributes.
 #' @export
-#' @aliases logLik
 #' @concept fit
 #'
 #' @importFrom stats logLik
@@ -526,7 +624,6 @@ logLik.fit_affectOU <- function(object, ...) {
 #'
 #' @export
 #' @concept fit
-#' @aliases coef
 #' @examples
 #' model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
 #' sim <- simulate(model, stop = 500, dt = 0.01, save_at = 0.1)
@@ -540,15 +637,16 @@ coef.fit_affectOU <- function(object, ...) {
 #' Confidence intervals for fitted OU affect model
 #'
 #' @param object An object of class [`fit_affectOU`][fit.affectOU()].
-#' @param parm Optional character vector of parameter names to include.
+#' @param parm Optional character vector naming parameters of the fitted
+#'   model to include: any of `theta`, `mu`, and `gamma`.
 #'  If missing, all parameters are included.
-#' @param level Confidence level for intervals (default 0.95).
+#' @param level Confidence level for intervals: a number between 0 and 1
+#'   (default 0.95).
 #' @param ... Additional arguments (unused).
 #' @return Matrix of confidence intervals with columns for lower and upper bounds.
 #'
 #' @export
 #' @concept fit
-#' @aliases confint
 #' @examples
 #' model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
 #' sim <- simulate(model, stop = 500, dt = 0.01, save_at = 0.1)
@@ -560,10 +658,24 @@ confint.fit_affectOU <- function(object, parm, level = 0.95, ...) {
   params <- unlist(object$parameters)
   se <- unlist(object$se)
 
+  call <- rlang::current_env()
+  check_model_class(
+    object, "fit_affectOU", "a fitted model from {.fun fit}", "object",
+    call = call
+  )
+
   # Subset if parm specified
   if (!missing(parm)) {
     if (!all(parm %in% names(params))) {
-      cli::cli_abort("Invalid parameter names in {.arg parm}.")
+      bad <- setdiff(parm, names(params))[[1]]
+      cli::cli_abort(
+        c(
+          "{.arg parm} must name parameters of the fitted model.",
+          "x" = "{.val {bad}} is not one of {.val {cli::cli_vec(names(params), list('vec-last' = ', or '))}}."
+        ),
+        call = call,
+        class = "affectOU_error_unknown_parm"
+      )
     }
 
     params <- params[parm]
@@ -571,13 +683,7 @@ confint.fit_affectOU <- function(object, parm, level = 0.95, ...) {
   }
 
   # Calculate intervals
-  if (!is.numeric(level) || length(level) != 1) {
-    cli::cli_abort("{.arg level} must be a single numeric value.")
-  }
-
-  if (level <= 0 || level >= 1) {
-    cli::cli_abort("{.arg level} must be between 0 and 1.")
-  }
+  check_level(level, call = call)
 
   alpha <- 1 - level
   z <- stats::qnorm(1 - alpha / 2)
@@ -598,7 +704,8 @@ confint.fit_affectOU <- function(object, parm, level = 0.95, ...) {
 #' as well as goodness-of-fit statistics.
 #'
 #' @param object An object of class [`fit_affectOU`][fit.affectOU()].
-#' @param level Confidence level for intervals (default 0.95).
+#' @param level Confidence level for intervals: a number between 0 and 1
+#'   (default 0.95).
 #' @param ... Additional arguments (unused).
 #'
 #' @return An object of class [`summary_fit_affectOU`][summary.fit_affectOU()] containing:
@@ -615,7 +722,6 @@ confint.fit_affectOU <- function(object, parm, level = 0.95, ...) {
 #'
 #' @export
 #' @concept fit
-#' @aliases summary
 #' @examples
 #' model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
 #' sim <- simulate(model, stop = 500, dt = 0.01, save_at = 0.1)
@@ -623,13 +729,12 @@ confint.fit_affectOU <- function(object, parm, level = 0.95, ...) {
 #' fitted <- fit(model, data = data$value, times = data$time)
 #' summary(fitted)
 summary.fit_affectOU <- function(object, level = 0.95, ...) {
-  if (!is.numeric(level) || length(level) != 1 || !is.finite(level)) {
-    cli::cli_abort("{.arg level} must be a single numeric value.")
-  }
-
-  if (level <= 0 || level >= 1) {
-    cli::cli_abort("{.arg level} must be between 0 and 1.")
-  }
+  call <- rlang::current_env()
+  check_model_class(
+    object, "fit_affectOU", "a fitted model from {.fun fit}", "object",
+    call = call
+  )
+  check_level(level, call = call)
 
   params <- unlist(object$parameters)
   se <- unlist(object$se)
@@ -670,7 +775,6 @@ summary.fit_affectOU <- function(object, level = 0.95, ...) {
 #' @return Returns `x` invisibly.
 #' @export
 #' @concept fit
-#' @aliases print
 #' @method print summary_fit_affectOU
 #' @examples
 #' model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
@@ -725,7 +829,6 @@ print.summary_fit_affectOU <- function(x, digits = 3, ...) {
 #'
 #' @export
 #' @concept fit
-#' @aliases print
 #' @examples
 #' model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
 #' sim <- simulate(model, stop = 500, dt = 0.01, save_at = 0.1)

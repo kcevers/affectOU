@@ -14,7 +14,6 @@
 #'
 #' @export
 #' @concept fit
-#' @aliases plot
 #' @examples
 #' model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
 #' sim <- simulate(model, stop = 500, dt = 0.01, save_at = 0.1)
@@ -43,7 +42,7 @@ plot.fit_affectOU <- function(x,
 
 #' Plot observed vs fitted trajectory
 #'
-#' Compare the observed data with the fitted trajectory over time. This plot 
+#' Compare the observed data with the fitted trajectory over time. This plot
 #' helps assess how well the model captures the overall pattern of the data.
 #'
 #' @param fit A `fit_affectOU` object
@@ -123,8 +122,8 @@ ou_plot_fit_time <- function(fit,
 
 #' Plot residuals over time
 #'
-#' Visualize the residuals (differences between observed and fitted values) over 
-#' time to assess model fit. Ideally, residuals should show no systematic 
+#' Visualize the residuals (differences between observed and fitted values) over
+#' time to assess model fit. Ideally, residuals should show no systematic
 #' patterns and be randomly scattered around zero.
 #'
 #' @param fit A `fit_affectOU` object
@@ -187,9 +186,9 @@ ou_plot_fit_residuals <- function(fit,
 
 #' Plot ACF of residuals
 #'
-#' Assess remaining autocorrelation in the residuals of the fitted model by 
-#' plotting the autocorrelation function (ACF). Ideally, there should be no 
-#' significant autocorrelation remaining, indicating that the model has 
+#' Assess remaining autocorrelation in the residuals of the fitted model by
+#' plotting the autocorrelation function (ACF). Ideally, there should be no
+#' significant autocorrelation remaining, indicating that the model has
 #' adequately captured the temporal dependencies in the data.
 #'
 #' @param fit A `fit_affectOU` object
@@ -271,8 +270,8 @@ ou_plot_fit_acf <- function(fit,
 
 #' QQ plot of residuals
 #'
-#' Visualize a normal Q-Q plot of the residuals to assess their distributional 
-#' properties. Ideally, residuals should lie approximately along the reference 
+#' Visualize a normal Q-Q plot of the residuals to assess their distributional
+#' properties. Ideally, residuals should lie approximately along the reference
 #' line, indicating normality.
 #'
 #' @param fit A `fit_affectOU` object

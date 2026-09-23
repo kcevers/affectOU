@@ -25,7 +25,8 @@ ou_plot_acf(
   xlab = "Lag (time)",
   ylab = ifelse(x[["model"]][["ndim"]] == 1, "ACF", "ACF / CCF"),
   legend_position = "topright",
-  ...
+  ...,
+  call = rlang::current_env()
 )
 }
 \arguments{
@@ -60,6 +61,10 @@ ou_plot_acf(
 \code{"center"}, \code{"none"}). Set to \code{"none"} to hide legend.}
 
 \item{...}{Additional graphical parameters}
+
+\item{call}{Environment used to report errors. Relevant only when
+calling this function from another function, so that errors name the
+function the user called.}
 }
 \value{
 \code{NULL} (invisibly), called for side effects only.

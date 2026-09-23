@@ -296,6 +296,6 @@ test_that("plot.affectOU errors", {
 
   expect_error(
     plot(model),
-    "Plotting an .* model is not supported"
+    class = "affectOU_error_plot_unsupported"
   )
 })

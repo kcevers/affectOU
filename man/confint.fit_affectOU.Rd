@@ -9,10 +9,12 @@
 \arguments{
 \item{object}{An object of class \code{\link[=fit.affectOU]{fit_affectOU}}.}
 
-\item{parm}{Optional character vector of parameter names to include.
+\item{parm}{Optional character vector naming parameters of the fitted
+model to include: any of \code{theta}, \code{mu}, and \code{gamma}.
 If missing, all parameters are included.}
 
-\item{level}{Confidence level for intervals (default 0.95).}
+\item{level}{Confidence level for intervals: a number between 0 and 1
+(default 0.95).}
 
 \item{...}{Additional arguments (unused).}
 }

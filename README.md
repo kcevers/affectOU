@@ -18,16 +18,16 @@ Guthier et al., 2020; Kuppens et al., 2010a; Voelkle & Oud, 2013). It
 formulates three core psychological mechanisms through three sets of
 parameters (Uhlenbeck & Ornstein, 1930; Oravecz et al., 2011):
 
-  - **Drift matrix Θ:** Governs the rate at which affect returns to
-    baseline, capturing a person’s *emotion regulation capacity* or
-    *emotional inertia*;
-  - **Attractor μ:** The long-term average level of affect that the
-    system tends to return to, representing a person’s *baseline mood*
-    or *emotional setpoint*;
-  - **Diffusion matrix Γ:** Controls the magnitude of short-term
-    fluctuations or noise in the affective system, characterizing an
-    individual’s *reactivity* or *sensitivity* to environmental
-    perturbations.
+- **Drift matrix Θ:** Governs the rate at which affect returns to
+  baseline, capturing a person’s *emotion regulation capacity* or
+  *emotional inertia*;
+- **Attractor μ:** The long-term average level of affect that the system
+  tends to return to, representing a person’s *baseline mood* or
+  *emotional setpoint*;
+- **Diffusion matrix Γ:** Controls the magnitude of short-term
+  fluctuations or noise in the affective system, characterizing an
+  individual’s *reactivity* or *sensitivity* to environmental
+  perturbations.
 
 `affectOU` primarily serves as a demonstration of a packaged
 computational model, as detailed in Evers & Vanhasbroeck (2026),
@@ -130,10 +130,10 @@ plot(sim)
 For more detailed examples and visual demonstrations of the model’s
 characteristics, see the vignettes:
 
-  - [Get started with
-    affectOU](https://kcevers.github.io/affectOU/articles/affectOU.html)
-  - [Affect characteristics implied by the OU
-    process](https://kcevers.github.io/affectOU/articles/characteristics.html)
+- [Get started with
+  affectOU](https://kcevers.github.io/affectOU/articles/affectOU.html)
+- [Affect characteristics implied by the OU
+  process](https://kcevers.github.io/affectOU/articles/characteristics.html)
 
 More ways to visualise the OU are offered in
 [`plot()`](https://kcevers.github.io/affectOU/reference/plot.simulate_affectOU.html).

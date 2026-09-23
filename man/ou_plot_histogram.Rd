@@ -26,7 +26,8 @@ ou_plot_histogram(
   xlab = "Affect",
   ylab = ifelse(freq, "Frequency", "Density"),
   legend_position = "topright",
-  ...
+  ...,
+  call = rlang::current_env()
 )
 }
 \arguments{
@@ -65,6 +66,10 @@ ou_plot_histogram(
 \code{"center"}, \code{"none"}). Set to \code{"none"} to hide legend.}
 
 \item{...}{Additional graphical parameters}
+
+\item{call}{Environment used to report errors. Relevant only when
+calling this function from another function, so that errors name the
+function the user called.}
 }
 \value{
 \code{NULL} (invisibly), called for side effects only.

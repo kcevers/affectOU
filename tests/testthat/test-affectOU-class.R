@@ -40,44 +40,44 @@ test_that("affectOU stores stationary distribution (1D unstable)", {
 test_that("affectOU rejects Inf parameters (1D)", {
   expect_error(
     affectOU(theta = Inf),
-    "`theta` must be a finite"
+    class = "affectOU_error_not_finite"
   )
 
   expect_error(
     affectOU(mu = Inf),
-    "`mu` must be a finite"
+    class = "affectOU_error_not_finite"
   )
 
   expect_error(
     affectOU(gamma = Inf),
-    "`gamma` must be a finite"
+    class = "affectOU_error_not_finite"
   )
 
   expect_error(
     affectOU(sigma = Inf),
-    "`sigma` must be a finite"
+    class = "affectOU_error_not_finite"
   )
 })
 
 test_that("affectOU requires scalar parameters for 1D", {
   expect_error(
     affectOU(ndim = 1, theta = c(0.5, 0.3), mu = 0, gamma = 1),
-    "`theta` must be a scalar"
+    class = "affectOU_error_wrong_shape"
   )
 
   expect_error(
     affectOU(ndim = 1, theta = 0.5, mu = c(0, 1), gamma = 1),
-    "`mu` must be a scalar"
+    class = "affectOU_error_wrong_shape"
   )
 
   expect_error(
     affectOU(ndim = 1, theta = 0.5, mu = 0, gamma = c(1, 2)),
-    "`gamma` must be a scalar"
+    class = "affectOU_error_wrong_shape"
   )
 
   expect_error(
     affectOU(ndim = 1, theta = 0.5, mu = 0, sigma = c(1, 2)),
-    "`sigma` must be a scalar"
+    class = "affectOU_error_wrong_shape"
   )
 })
 
@@ -101,7 +101,7 @@ test_that("affectOU infers ndim if not specified", {
 
   expect_error(
     affectOU(theta = diag(2), mu = 0, gamma = diag(3)),
-    "Inconsistent dimensions"
+    class = "affectOU_error_inconsistent_ndim"
   )
 })
 
@@ -151,7 +151,7 @@ test_that("affectOU validates theta, gamma, sigma dimensions (2D)", {
       ndim = 2,
       theta = matrix(1:6, nrow = 2, ncol = 3)
     ),
-    "`theta` must be a square matrix"
+    class = "affectOU_error_wrong_shape"
   )
 
   expect_error(
@@ -159,7 +159,7 @@ test_that("affectOU validates theta, gamma, sigma dimensions (2D)", {
       ndim = 2,
       gamma = matrix(1:6, nrow = 2, ncol = 3)
     ),
-    "`gamma` must be a square matrix"
+    class = "affectOU_error_wrong_shape"
   )
 
   expect_error(
@@ -167,7 +167,7 @@ test_that("affectOU validates theta, gamma, sigma dimensions (2D)", {
       ndim = 2,
       sigma = matrix(1:6, nrow = 2, ncol = 3)
     ),
-    "`sigma` must be a square matrix"
+    class = "affectOU_error_wrong_shape"
   )
 })
 
@@ -179,7 +179,7 @@ test_that("affectOU validates mu dimensions (2D)", {
   # Wrong length
   expect_error(
     affectOU(ndim = ndim, mu = c(0, 0, 0)),
-    "`mu` must be"
+    class = "affectOU_error_wrong_shape"
   )
 
   # Scalar instead of vector
@@ -199,7 +199,7 @@ test_that("affectOU validates gamma, sigma positive semi-definite (2D)", {
       ndim = ndim,
       gamma = matrix(c(1, 2, 2, -1), nrow = 2)
     ),
-    "`gamma` must be a lower triangular matrix"
+    class = "affectOU_error_gamma_not_lower_triangular"
   )
 
   # Lower triangular gamma with negative values is fine (does not need PD)
@@ -216,7 +216,7 @@ test_that("affectOU validates gamma, sigma positive semi-definite (2D)", {
       ndim = ndim,
       sigma = matrix(c(1, 2, 2, -1), nrow = 2)
     ),
-    "`sigma` must be positive semi-definite"
+    class = "affectOU_error_sigma_not_psd"
   )
 })
 
@@ -346,28 +346,28 @@ test_that("affectOU rejects Inf parameters (2D)", {
 
   expect_error(
     affectOU(ndim = ndim, theta = matrix(Inf, 2, 2)),
-    "`theta` must contain only finite values"
+    class = "affectOU_error_not_finite"
   )
 
   expect_error(
     affectOU(ndim = ndim, mu = c(Inf, 0)),
-    "`mu` must contain only finite values"
+    class = "affectOU_error_not_finite"
   )
 
   expect_error(
     affectOU(ndim = ndim, gamma = matrix(Inf, 2, 2)),
-    "`gamma` must contain only finite values"
+    class = "affectOU_error_not_finite"
   )
 
   expect_error(
     affectOU(ndim = ndim, sigma = matrix(Inf, 2, 2)),
-    "`sigma` must contain only finite values"
+    class = "affectOU_error_not_finite"
   )
 })
 
 
 test_that("affectOU rejects 0-dimensional systems", {
-  expect_error(affectOU(ndim = 0), "`ndim` must be a positive integer")
+  expect_error(affectOU(ndim = 0), "`ndim` must be a whole number")
 })
 
 
@@ -378,19 +378,19 @@ test_that("gamma must be lower triangular for nD models", {
 
   expect_error(
     affectOU(ndim = 2, gamma = matrix(c(1, 0, 0.5, 1), nrow = 2)),
-    "`gamma` must be a lower triangular matrix"
+    class = "affectOU_error_gamma_not_lower_triangular"
   )
 
   # Symmetric (non-diagonal): rejected
   expect_error(
     affectOU(ndim = 2, gamma = matrix(c(1, 0.3, 0.3, 1), nrow = 2)),
-    "`gamma` must be a lower triangular matrix"
+    class = "affectOU_error_gamma_not_lower_triangular"
   )
 
   # Full matrix: rejected
   expect_error(
     affectOU(ndim = 2, gamma = matrix(c(1, 0.2, 0.5, 1), nrow = 2)),
-    "`gamma` must be a lower triangular matrix"
+    class = "affectOU_error_gamma_not_lower_triangular"
   )
 
   # Lower triangular: accepted
@@ -422,12 +422,12 @@ test_that("gamma must be lower triangular for nD models", {
 test_that("specifying both gamma and sigma is an error", {
   expect_error(
     affectOU(gamma = 1, sigma = 1),
-    "Specify either.*gamma.*or.*sigma.*not both"
+    class = "affectOU_error_gamma_sigma_both"
   )
 
   expect_error(
     affectOU(ndim = 2, gamma = diag(2), sigma = diag(2)),
-    "Specify either.*gamma.*or.*sigma.*not both"
+    class = "affectOU_error_gamma_sigma_both"
   )
 })
 
@@ -474,6 +474,6 @@ test_that("sigma must be symmetric", {
 
   expect_error(
     affectOU(ndim = 2, sigma = sigma),
-    "`sigma` must be symmetric"
+    class = "affectOU_error_sigma_not_symmetric"
   )
 })

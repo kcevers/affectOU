@@ -424,18 +424,20 @@ test_that("ou_plot_acf handles multi-dimensional simulation", {
 })
 
 test_that("ou_plot_acf rejects vector which_sim", {
+  # Only one simulation exists, so index 2 is out of range
   sim <- quick_sim(ndim = 2)
 
   expect_error(
     plot(sim, type = "acf", which_sim = c(1, 2)),
-    "Number of selected simulations \\(2\\) exceeds maximum allowed \\(1\\)"
+    class = "affectOU_error_which_sim_out_of_range"
   )
 
+  # Both indices exist, but the ACF plot takes only one simulation
   sim <- quick_sim(ndim = 2, nsim = 3)
 
   expect_error(
     plot(sim, type = "acf", which_sim = c(1, 2)),
-    "Number of selected simulations \\(2\\) exceeds maximum allowed \\(1\\)"
+    class = "affectOU_error_too_many_sims"
   )
 })
 
@@ -445,17 +447,17 @@ test_that("ou_plot_acf validates lag.max argument", {
 
   expect_error(
     ou_plot_acf(sim, lag.max = -5),
-    "must be a positive numeric value"
+    "`lag.max` must be a number larger than or equal to 0"
   )
 
   expect_error(
     ou_plot_acf(sim, lag.max = c(10, 20)),
-    "must be a positive numeric value"
+    "`lag.max` must be a number"
   )
 
   expect_error(
     ou_plot_acf(sim, lag.max = "ten"),
-    "must be a positive numeric value"
+    "`lag.max` must be a number"
   )
 })
 
@@ -483,7 +485,6 @@ test_that("ou_plot_acf handles non-stationary simulations", {
 
   expect_silent(plot(sim, type = "acf"))
 })
-
 
 
 # ==============================================================================

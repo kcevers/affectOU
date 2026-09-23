@@ -70,9 +70,9 @@ The model can then be simulated with [`simulate()`](https://kcevers.github.io/af
 ```{r seed, echo=FALSE}
 # Set seed for reproducibility
 set.seed(
-  123, 
-  kind = "Mersenne-Twister", 
-  normal.kind = "Inversion", 
+  123,
+  kind = "Mersenne-Twister",
+  normal.kind = "Inversion",
   sample.kind = "Rejection"
 )
 ```
@@ -82,24 +82,30 @@ sim <- simulate(model)
 ```
 
 ```{r tutorial_paper, echo = FALSE, include=FALSE, fig.show='hide', fig.height=4, fig.width=7}
-plot(sim, main = "Ornstein-Uhlenbeck Affect Dynamics",  
-          mar = c(2, 2, 0.5, 2))
+plot(sim,
+  main = "Ornstein-Uhlenbeck Affect Dynamics",
+  mar = c(2, 2, 0.5, 2)
+)
 ```
 
-```{r proposal_paper, echo = FALSE, include=FALSE, fig.show='hide', fig.height=4, fig.width=6}
-library(extrafont)
+```{r proposal_paper, echo = FALSE, include=FALSE, fig.show='hide', fig.height=4, fig.width=6.25}
+if (requireNamespace("extrafont")) {
+  library(extrafont)
 
-# # Import fonts once
-# font_import()
-# # Look at available fonts
-# fonts()
+  # # Import fonts once
+  # font_import()
+  # # Look at available fonts
+  # fonts()
 
-# Register fonts for PDF output
-loadfonts(device = "pdf", quiet = TRUE)
+  # Register fonts for PDF output
+  loadfonts(device = "pdf", quiet = TRUE)
 
-plot(sim, main = "", mar = c(0, 0, 0, 0), xlim = c(0, 30), cex.lab = 1.3,
-#  xaxt = "n", yaxt = "n", 
-family = "Georgia", col.grid = "white", col.axis = "white")
+  plot(sim,
+    main = "", mar = c(0, 0, 0, 0), xlim = c(0, 30), cex.lab = 1.3,
+    #  xaxt = "n", yaxt = "n",
+    family = "Georgia", col.grid = "white", col.axis = "white"
+  )
+}
 ```
 
 ```{r plot, results='hide', fig.show='hide'}

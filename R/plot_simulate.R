@@ -15,10 +15,13 @@
 #' @param sub Subtitle for panels
 #' @param xlab X-axis label
 #' @param ylab Y-axis label
-#' @param legend_position Position of legend (one of `"bottomright"`, `"bottom"`, 
-#' `"bottomleft"`, `"left"`, `"topleft"`, `"top"`, `"topright"`, `"right"`, 
+#' @param legend_position Position of legend (one of `"bottomright"`, `"bottom"`,
+#' `"bottomleft"`, `"left"`, `"topleft"`, `"top"`, `"topright"`, `"right"`,
 #' `"center"`, `"none"`). Set to `"none"` to hide legend.
 #' @param ... Additional graphical parameters
+#' @param call Environment used to report errors. Relevant only when
+#'   calling this function from another function, so that errors name the
+#'   function the user called.
 #'
 #' @name plot_parameters
 #' @keywords internal
@@ -27,7 +30,7 @@ NULL
 
 #' Plot simulation
 #'
-#' Visualise an Ornstein-Uhlenbeck affect simulation using different types of 
+#' Visualise an Ornstein-Uhlenbeck affect simulation using different types of
 #' plots. See specific plotting functions for allowed arguments and details.
 #'
 #' Available plot types:
@@ -48,7 +51,6 @@ NULL
 #' * [ou_plot_acf()] — empirical vs. theoretical autocorrelation
 #' * [ou_plot_phase()] — phase portrait with mean reversion line
 #' @export
-#' @aliases plot
 #' @concept plot_simulate
 #'
 #' @examples
@@ -72,11 +74,13 @@ plot.simulate_affectOU <- function(x,
                                    ...) {
   type <- match.arg(type)
 
+  call <- rlang::current_env()
+
   switch(type,
-    time = ou_plot_time(x, ...),
-    acf = ou_plot_acf(x, ...),
-    histogram = ou_plot_histogram(x, ...),
-    phase = ou_plot_phase(x, ...)
+    time = ou_plot_time(x, ..., call = call),
+    acf = ou_plot_acf(x, ..., call = call),
+    histogram = ou_plot_histogram(x, ..., call = call),
+    phase = ou_plot_phase(x, ..., call = call)
   )
 }
 
@@ -84,8 +88,8 @@ plot.simulate_affectOU <- function(x,
 #' Plot simulation trajectory
 #'
 #' Visualise the time series trajectories of affect dimensions from an OU
-#' affect simulation. Each dimension can be plotted in a separate panel by 
-#' setting `by_dim = TRUE`. Specific dimensions or simulations can be plotted 
+#' affect simulation. Each dimension can be plotted in a separate panel by
+#' setting `by_dim = TRUE`. Specific dimensions or simulations can be plotted
 #' with `which_dim` and `which_sim`, respectively.
 #'
 #' @section Attractor Line:
@@ -124,12 +128,14 @@ ou_plot_time <- function(x,
                          main = paste0(
                            "Affect Dynamics",
                            if (x[["nsim"]] > 1) {
-                            paste0(" (",
-                            if (is.null(which_sim)) {
-                              x[["nsim"]]
-                            } else {
-                              length(which_sim)
-                            }, " simulations)")
+                             paste0(
+                               " (",
+                               if (is.null(which_sim)) {
+                                 x[["nsim"]]
+                               } else {
+                                 length(which_sim)
+                               }, " simulations)"
+                             )
                            }
                          ),
                          sub = paste(
@@ -143,7 +149,8 @@ ou_plot_time <- function(x,
                          xlab = "Time",
                          ylab = "Affect",
                          legend_position = "topright",
-                         ...) {
+                         ...,
+                         call = rlang::current_env()) {
   # Parse arguments
   args <- c(as.list(environment()), list(...))
   args[["x"]] <- NULL
@@ -163,12 +170,10 @@ ou_plot_time <- function(x,
   which_sim <- sort(unique(which_sim))
 
   # Prepare sim object
-  x <- prep_sim(x, which_dim, which_sim)
+  x <- prep_sim(x, which_dim, which_sim, call = call)
 
   # Check length subtitle matches number of dimensions
-  if (length(P[["sub"]]) != length(which_dim)) {
-    cli::cli_abort("Length of {.arg sub} must match number of dimensions plotted.")
-  }
+  check_sub_length(P[["sub"]], length(which_dim), call = call)
 
   # Unpack sim object
   data <- x[["data"]]
@@ -183,7 +188,7 @@ ou_plot_time <- function(x,
   apply_par(P)
 
   # Set up layout
-  layout <- get_layout(ndim, P, args, by_dim = by_dim)
+  layout <- get_layout(ndim, P, args, by_dim = by_dim, call = call)
   par(mfrow = c(layout$nrow, layout$ncol))
 
   # Set axis limits
@@ -192,7 +197,7 @@ ou_plot_time <- function(x,
   } else {
     xlim <- P[["xlim"]]
   }
-  ylims <- get_lims(data, ndim, nsim, P[["ylim"]], share_yaxis, include = mu)
+  ylims <- get_lims(data, ndim, nsim, P[["ylim"]], share_yaxis, include = mu, call = call)
 
   # If not by_dim, set up single panel
   if (!by_dim) {
@@ -249,22 +254,25 @@ ou_plot_time <- function(x,
   col_sim_leg <- if (nsim > 1) {
     generate_shades(
       if (by_dim) cols[layout$ncol] else cols[1L],
-      nsim, min_alpha = alpha / 4, max_alpha = alpha
+      nsim,
+      min_alpha = alpha / 4, max_alpha = alpha
     )
   } else {
     cols[1L]
   }
-  sim_leg <- sim_legend_entries(nsim, lty_sim, col_sim_leg, lwd = P[["lwd"]],
-                                sim_ids = which_sim)
+  sim_leg <- sim_legend_entries(nsim, lty_sim, col_sim_leg,
+    lwd = P[["lwd"]],
+    sim_ids = which_sim
+  )
   if (!is.null(sim_leg) && ndim > 1) {
     sim_leg$col <- rep("black", length(sim_leg$col))
   }
 
   if (by_dim) {
     legend_text <- c(expression(Attractor ~ mu), if (!is.null(sim_leg)) sim_leg$text)
-    legend_cols <- c(col_theory,                 if (!is.null(sim_leg)) sim_leg$col)
-    legend_lty  <- c(1L,                         if (!is.null(sim_leg)) sim_leg$lty)
-    legend_lwd  <- c(2,                          if (!is.null(sim_leg)) sim_leg$lwd)
+    legend_cols <- c(col_theory, if (!is.null(sim_leg)) sim_leg$col)
+    legend_lty <- c(1L, if (!is.null(sim_leg)) sim_leg$lty)
+    legend_lwd <- c(2, if (!is.null(sim_leg)) sim_leg$lwd)
     add_panel_legend(
       position = P[["legend_position"]],
       xlim = xlim,
@@ -278,14 +286,22 @@ ou_plot_time <- function(x,
       bty = "o", bg = "white"
     )
   } else {
-    legend_text <- c(expression(Attractor ~ mu), P[["sub"]],
-                     if (!is.null(sim_leg)) sim_leg$text)
-    legend_cols <- c(col_theory, cols,
-                     if (!is.null(sim_leg)) sim_leg$col)
-    legend_lty  <- c(1L, rep(1L, ndim),
-                     if (!is.null(sim_leg)) sim_leg$lty)
-    legend_lwd  <- c(2, rep(P[["lwd"]], ndim),
-                     if (!is.null(sim_leg)) sim_leg$lwd)
+    legend_text <- c(
+      expression(Attractor ~ mu), P[["sub"]],
+      if (!is.null(sim_leg)) sim_leg$text
+    )
+    legend_cols <- c(
+      col_theory, cols,
+      if (!is.null(sim_leg)) sim_leg$col
+    )
+    legend_lty <- c(
+      1L, rep(1L, ndim),
+      if (!is.null(sim_leg)) sim_leg$lty
+    )
+    legend_lwd <- c(
+      2, rep(P[["lwd"]], ndim),
+      if (!is.null(sim_leg)) sim_leg$lwd
+    )
     add_panel_legend(
       position = P[["legend_position"]],
       xlim = xlim,
@@ -309,16 +325,16 @@ ou_plot_time <- function(x,
 #'
 #' Visualise the distribution of affect values from an OU affect simulation
 #' using histograms for each dimension. In case of multiple simulations, the
-#' histograms aggregate data across all simulations for each dimension. Different 
-#' dimensions can be plotted in separate panels by setting `by_dim = TRUE`. 
-#' Specific dimensions or simulations can be plotted with `which_dim` and 
+#' histograms aggregate data across all simulations for each dimension. Different
+#' dimensions can be plotted in separate panels by setting `by_dim = TRUE`.
+#' Specific dimensions or simulations can be plotted with `which_dim` and
 #' `which_sim`, respectively.
 #'
 #' @section Stationary Distribution:
 #' When the system is stable, the stationary distribution of the multivariate
-#' OU is normal with mean \eqn{\mathbf{\mu}} and covariance matrix 
-#' \eqn{\mathbf{\Sigma}_\infty} derived as the solution of the Lyapunov 
-#' equation \eqn{\mathbf{\Gamma} \mathbf{\Gamma}^T = \mathbf{\Theta} \mathbf{\Sigma}_\infty + \mathbf{\Sigma}_\infty \mathbf{\Theta}^T}. 
+#' OU is normal with mean \eqn{\mathbf{\mu}} and covariance matrix
+#' \eqn{\mathbf{\Sigma}_\infty} derived as the solution of the Lyapunov
+#' equation \eqn{\mathbf{\Gamma} \mathbf{\Gamma}^T = \mathbf{\Theta} \mathbf{\Sigma}_\infty + \mathbf{\Sigma}_\infty \mathbf{\Theta}^T}.
 #' The theoretical density curve is overlaid on the histogram when the system is
 #' stationary.
 #'
@@ -376,11 +392,10 @@ ou_plot_histogram <- function(x,
                               xlab = "Affect",
                               ylab = ifelse(freq, "Frequency", "Density"),
                               legend_position = "topright",
-                              ...) {
+                              ...,
+                              call = rlang::current_env()) {
   # Input validation
-  if (!is.logical(freq) || length(freq) != 1) {
-    cli::cli_abort("{.arg freq} must be a single logical value.")
-  }
+  rlang::check_bool(freq, arg = "freq", call = call)
 
   # Parse arguments
   args <- c(as.list(environment()), list(...))
@@ -404,13 +419,11 @@ ou_plot_histogram <- function(x,
   summ_orig <- summary(x[["model"]])
 
   # Prepare sim object
-  x <- prep_sim(x, which_dim, which_sim)
+  x <- prep_sim(x, which_dim, which_sim, call = call)
   summ <- summary(x[["model"]])
 
   # Check length subtitle matches number of dimensions
-  if (length(P[["sub"]]) != length(which_dim)) {
-    cli::cli_abort("Length of {.arg sub} must match number of dimensions plotted.")
-  }
+  check_sub_length(P[["sub"]], length(which_dim), call = call)
 
   # Unpack sim object
   data <- x[["data"]]
@@ -423,7 +436,7 @@ ou_plot_histogram <- function(x,
   apply_par(P)
 
   # Set up layout
-  layout <- get_layout(ndim, P, args, by_dim = by_dim)
+  layout <- get_layout(ndim, P, args, by_dim = by_dim, call = call)
   par(mfrow = c(layout$nrow, layout$ncol))
 
   # Compute histograms
@@ -450,8 +463,8 @@ ou_plot_histogram <- function(x,
   }
 
   # Set axis limits
-  xlims <- get_lims(X, ndim, nsim, P[["xlim"]], share_xaxis)
-  ylims <- get_lims(Y, ndim, nsim, P[["ylim"]], share_yaxis)
+  xlims <- get_lims(X, ndim, nsim, P[["xlim"]], share_xaxis, call = call)
+  ylims <- get_lims(Y, ndim, nsim, P[["ylim"]], share_yaxis, call = call)
 
   # Compute theoretical distribution if stationary and parameters are valid
   X_theo <- vector("list", ndim)
@@ -618,7 +631,7 @@ ou_plot_histogram <- function(x,
 #' model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
 #' sim <- simulate(model, stop = 500, dt = 0.01, save_at = 0.01)
 #' ou_plot_acf(sim, lag.max = 5)
-#' 
+#'
 ou_plot_acf <- function(x,
                         lag.max = 10,
                         which_dim = NULL,
@@ -642,11 +655,10 @@ ou_plot_acf <- function(x,
                         xlab = "Lag (time)",
                         ylab = ifelse(x[["model"]][["ndim"]] == 1, "ACF", "ACF / CCF"),
                         legend_position = "topright",
-                        ...) {
+                        ...,
+                        call = rlang::current_env()) {
   # Check lag.max
-  if (!is.numeric(lag.max) || length(lag.max) != 1 || lag.max < 0) {
-    cli::cli_abort("{.arg lag.max} must be a positive numeric value.")
-  }
+  check_positive_number(lag.max, "lag.max", call = call)
 
   # lag.max is interpreted in terms of time, so we need to convert it to number of lags based on save_at
   lag.max_nr <- round(lag.max / x[["save_at"]])
@@ -669,12 +681,10 @@ ou_plot_acf <- function(x,
   }
 
   # Prepare sim object
-  x <- prep_sim(x, which_dim, which_sim, max_nsim = 1)
+  x <- prep_sim(x, which_dim, which_sim, max_nsim = 1, call = call)
 
   # Check length subtitle matches number of dimensions
-  if (length(P[["sub"]]) != length(which_dim)) {
-    cli::cli_abort("Length of {.arg sub} must match number of dimensions plotted.")
-  }
+  check_sub_length(P[["sub"]], length(which_dim), call = call)
 
   # Unpack sim object
   data <- x[["data"]]
@@ -748,8 +758,8 @@ ou_plot_acf <- function(x,
   }
 
   # Set axis limits
-  xlims <- get_lims(X, ndim * ndim, nsim, P[["xlim"]], FALSE, include = X_theo)
-  ylims <- get_lims(Y, ndim * ndim, nsim, P[["ylim"]], share_yaxis, include = Y_theo)
+  xlims <- get_lims(X, ndim * ndim, nsim, P[["xlim"]], FALSE, include = X_theo, call = call)
+  ylims <- get_lims(Y, ndim * ndim, nsim, P[["ylim"]], share_yaxis, include = Y_theo, call = call)
 
   # Plot each ACF/CCF
   for (i in seq_len(ndim)) {
@@ -889,7 +899,8 @@ ou_plot_phase <- function(x,
                           xlab = "",
                           ylab = "",
                           legend_position = "topright",
-                          ...) {
+                          ...,
+                          call = rlang::current_env()) {
   # Parse arguments
   args <- c(as.list(environment()), list(...))
   args[["x"]] <- NULL
@@ -909,12 +920,10 @@ ou_plot_phase <- function(x,
   which_sim <- sort(unique(which_sim))
 
   # Prepare sim object
-  x <- prep_sim(x, which_dim, which_sim)
+  x <- prep_sim(x, which_dim, which_sim, call = call)
 
   # Check length subtitle matches number of dimensions
-  if (length(P[["sub"]]) != length(which_dim)) {
-    cli::cli_abort("Length of {.arg sub} must match number of dimensions plotted.")
-  }
+  check_sub_length(P[["sub"]], length(which_dim), call = call)
 
   # Unpack sim object
   data <- x[["data"]]
@@ -950,8 +959,8 @@ ou_plot_phase <- function(x,
   lty_sim <- assign_sim_lty(nsim)
 
   # Set axis limits
-  xlims <- get_lims(data, ndim, nsim, P[["xlim"]], share_xaxis, include = mu)
-  ylims <- get_lims(data, ndim, nsim, P[["ylim"]], share_yaxis, include = mu)
+  xlims <- get_lims(data, ndim, nsim, P[["xlim"]], share_xaxis, include = mu, call = call)
+  ylims <- get_lims(data, ndim, nsim, P[["ylim"]], share_yaxis, include = mu, call = call)
 
   # Compute theoretical relationships
   X_theo <- vector("list", ndim * ndim)
@@ -1049,23 +1058,35 @@ ou_plot_phase <- function(x,
   } else {
     cols[ndim]
   }
-  sim_leg_pp <- sim_legend_entries(nsim, lty_sim, col_sim_leg_pp, lwd = P[["lwd"]],
-                                   sim_ids = which_sim)
+  sim_leg_pp <- sim_legend_entries(nsim, lty_sim, col_sim_leg_pp,
+    lwd = P[["lwd"]],
+    sim_ids = which_sim
+  )
   if (!is.null(sim_leg_pp) && ndim > 1) {
     sim_leg_pp$col <- rep("black", length(sim_leg_pp$col))
   }
 
   # Add legend inside top-right panel
-  legend_text <- c("Theoretical", expression(Attractor ~ mu),
-                   if (!is.null(sim_leg_pp)) sim_leg_pp$text)
-  legend_lty  <- c(2L, NA,
-                   if (!is.null(sim_leg_pp)) sim_leg_pp$lty)
-  legend_pch  <- c(NA, 8L,
-                   if (!is.null(sim_leg_pp)) rep(NA_integer_, length(sim_leg_pp$text)))
-  legend_col  <- c(col_theory, col_theory,
-                   if (!is.null(sim_leg_pp)) sim_leg_pp$col)
-  legend_lwd  <- c(2, 2,
-                   if (!is.null(sim_leg_pp)) sim_leg_pp$lwd)
+  legend_text <- c(
+    "Theoretical", expression(Attractor ~ mu),
+    if (!is.null(sim_leg_pp)) sim_leg_pp$text
+  )
+  legend_lty <- c(
+    2L, NA,
+    if (!is.null(sim_leg_pp)) sim_leg_pp$lty
+  )
+  legend_pch <- c(
+    NA, 8L,
+    if (!is.null(sim_leg_pp)) rep(NA_integer_, length(sim_leg_pp$text))
+  )
+  legend_col <- c(
+    col_theory, col_theory,
+    if (!is.null(sim_leg_pp)) sim_leg_pp$col
+  )
+  legend_lwd <- c(
+    2, 2,
+    if (!is.null(sim_leg_pp)) sim_leg_pp$lwd
+  )
   add_panel_legend(
     position = P[["legend_position"]],
     xlim = xlims[[ndim]],

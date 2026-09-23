@@ -4,14 +4,15 @@
 \alias{summary.simulate_affectOU}
 \title{Summarize simulation results}
 \usage{
-\method{summary}{simulate_affectOU}(object, burnin = 0, ...)
+\method{summary}{simulate_affectOU}(object, discard_initial_time = 0, ...)
 }
 \arguments{
 \item{object}{A \code{simulate_affectOU} object}
 
-\item{burnin}{Time to exclude from the start of simulations (in time units,
-not time points). Useful for allowing the process to reach stationarity.
-Default is 0.}
+\item{discard_initial_time}{How much of the start to discard, so the
+process has settled before it is summarised -- what simulation studies
+call burn-in. Measured in time units, like \code{stop}, and must be less than
+the simulated period, or nothing would remain. Default is 0.}
 
 \item{...}{Additional arguments (unused)}
 }
@@ -20,8 +21,8 @@ An object of class \code{summary_simulate_affectOU} containing:
 \describe{
 \item{ndim}{Number of dimensions}
 \item{nsim}{Number of simulations}
-\item{n_timepoints}{Number of time points used (after burnin)}
-\item{burnin}{Burnin time excluded}
+\item{n_timepoints}{Number of time points used after discarding}
+\item{discard_initial_time}{Amount of time discarded from the start}
 \item{dt}{Simulation time step}
 \item{stop}{Total simulation time}
 \item{save_at}{Time interval at which data was saved}
@@ -56,12 +57,12 @@ model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
 sim <- simulate(model, stop = 100, dt = 0.1, nsim = 10, seed = 123)
 summary(sim)
 
-# With burnin to exclude initial transient
-summary(sim, burnin = 10)
+# Discard the initial transient before summarising
+summary(sim, discard_initial_time = 10)
 
 # 2D stationary model
 model <- affectOU(ndim = 2, theta = diag(c(0.5, 0.3)), mu = c(1, -1))
 sim <- simulate(model, stop = 100, dt = 0.1, nsim = 5, seed = 456)
-summary(sim, burnin = 20)
+summary(sim, discard_initial_time = 20)
 }
 \concept{simulate}

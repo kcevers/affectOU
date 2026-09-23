@@ -39,23 +39,23 @@ test_that("simulate.affectOU respects local seed (1D)", {
   expect_equal(sim1[["data"]], sim2[["data"]])
 })
 
-test_that("simulate.affectOU starts at initial_state (1D)", {
-  initial_state <- 5
+test_that("simulate.affectOU starts at initial (1D)", {
+  x0 <- 5
   model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
-  sim <- simulate(model, stop = 10, dt = .1, save_at = .1, initial_state = initial_state)
+  sim <- simulate(model, stop = 10, dt = .1, save_at = .1, initial = x0)
 
-  expect_equal(sim[["data"]][1], initial_state)
+  expect_equal(sim[["data"]][1], x0)
 })
 
-test_that("simulate.affectOU NULL initial_state draws from stationary (1D)", {
+test_that("simulate.affectOU NULL initial draws from stationary (1D)", {
   model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
-  # With nsim > 1 and NULL initial_state, first values should vary across sims
+  # With nsim > 1 and NULL initial, first values should vary across sims
   sim <- simulate(model, nsim = 10, stop = 1, dt = .1, save_at = .1, seed = 42)
   first_vals <- sim[["data"]][1, 1, ]
   expect_true(length(unique(round(first_vals, 6))) > 1)
 })
 
-test_that("simulate.affectOU NULL initial_state warns for unstable system (1D)", {
+test_that("simulate.affectOU NULL initial warns for unstable system (1D)", {
   model <- affectOU(theta = -0.5, mu = 2, gamma = 1)
   expect_warning(
     sim <- simulate(model, nsim = 2, stop = 1, dt = .1, save_at = .1),
@@ -68,7 +68,7 @@ test_that("simulate.affectOU NULL initial_state warns for unstable system (1D)",
 
 test_that("simulate.affectOU trajectory reverts to mu (1D)", {
   model <- affectOU(theta = 0.5, mu = 2, gamma = 0.1)
-  sim <- simulate(model, stop = 100, dt = .1, save_at = .1, nsim = 1, initial_state = 10)
+  sim <- simulate(model, stop = 100, dt = .1, save_at = .1, nsim = 1, initial = 10)
 
   # After long time, should be close to mu
   final_values <- sim[["data"]][(length(sim[["data"]]) - 50):length(sim[["data"]])]
@@ -110,12 +110,12 @@ test_that("simulate.affectOU respects seed (2D)", {
   expect_equal(sim1[["data"]], sim2[["data"]])
 })
 
-test_that("simulate.affectOU starts at initial_state (2D)", {
+test_that("simulate.affectOU starts at initial (2D)", {
   ndim <- 2
   theta <- matrix(c(0.5, 0, 0, 0.3), nrow = 2)
   initial <- c(5, -3)
   model <- affectOU(ndim = ndim, theta = theta, mu = c(0, 0), gamma = diag(2))
-  sim <- simulate(model, stop = 10, dt = .1, save_at = .1, nsim = 1, initial_state = initial)
+  sim <- simulate(model, stop = 10, dt = .1, save_at = .1, nsim = 1, initial = initial)
 
   expect_equal(sim[["data"]][1, , 1], initial)
 })
@@ -125,7 +125,7 @@ test_that("simulate.affectOU trajectory reverts to mu (2D)", {
   theta <- matrix(c(0.5, 0, 0, 0.5), nrow = 2)
   mu <- c(2, -1)
   model <- affectOU(ndim = ndim, theta = theta, mu = mu, gamma = diag(c(0.1, 0.1)))
-  sim <- simulate(model, stop = 100, dt = .1, save_at = .1, nsim = 1, initial_state = c(10, 10))
+  sim <- simulate(model, stop = 100, dt = .1, save_at = .1, nsim = 1, initial = c(10, 10))
 
   # After long time, should be close to mu
   final_indices <- (nrow(sim[["data"]]) - 50):nrow(sim[["data"]])
@@ -232,8 +232,8 @@ test_that("tail.simulate_affectOU returns a data.frame with last n rows", {
 test_that("head/tail validate n is positive integer", {
   sim <- quick_sim(ndim = 1, nsim = 1)
 
-  expect_error(head(sim, n = 0), "n.*positive integer")
-  expect_error(tail(sim, n = -1), "n.*positive integer")
+  expect_error(head(sim, n = 0), "`n` must be a whole number")
+  expect_error(tail(sim, n = -1), "`n` must be a whole number")
 })
 
 # Test edge cases ------------------------------------------------------------
@@ -249,17 +249,17 @@ test_that("affectOU handles very small dt", {
 test_that("affectOU handles very large theta (fast reversion)", {
   mu <- 0
   model <- affectOU(theta = 10, mu = mu, gamma = .1)
-  sim <- simulate(model, stop = 10, dt = .01, save_at = .1, nsim = 1, initial_state = 5)
+  sim <- simulate(model, stop = 10, dt = .01, save_at = .1, nsim = 1, initial = 5)
 
   # Should revert very quickly
   expect_true(abs(sim[["data"]][50] - mu) < .1)
 })
 
 test_that("affectOU handles very small theta (slow reversion)", {
-  initial_state <- 5
+  x0 <- 5
   mu <- 0
   model <- affectOU(theta = 0.001, mu = mu, gamma = .1)
-  sim <- simulate(model, stop = 10, dt = .01, save_at = .1, nsim = 1, initial_state = initial_state)
+  sim <- simulate(model, stop = 10, dt = .01, save_at = .1, nsim = 1, initial = x0)
 
   # Should still be far from equilibrium
   expect_true(abs(sim[["data"]][101] - mu) > 1)
@@ -503,7 +503,7 @@ test_that("summary.simulate_affectOU has consistent structure (1D stationary)", 
 
   # Check top-level components (flat structure)
   expect_named(s, c(
-    "ndim", "nsim", "n_timepoints", "burnin",
+    "ndim", "nsim", "n_timepoints", "discard_initial_time",
     "dt", "stop", "save_at", "seed",
     "statistics", "theoretical"
   ))
@@ -525,7 +525,7 @@ test_that("summary.simulate_affectOU has consistent structure (1D stationary)", 
   # Check flat metadata
   expect_equal(s$ndim, 1)
   expect_equal(s$nsim, 3)
-  expect_equal(s$burnin, 0)
+  expect_equal(s$discard_initial_time, 0)
 })
 
 test_that("summary.simulate_affectOU has consistent structure (2D stationary)", {
@@ -556,7 +556,7 @@ test_that("summary.simulate_affectOU handles non-stationary model", {
 
   # Structure should be consistent (flat)
   expect_named(s, c(
-    "ndim", "nsim", "n_timepoints", "burnin",
+    "ndim", "nsim", "n_timepoints", "discard_initial_time",
     "dt", "stop", "save_at", "seed",
     "statistics", "theoretical"
   ))
@@ -569,36 +569,36 @@ test_that("summary.simulate_affectOU handles non-stationary model", {
   expect_null(s$theoretical)
 })
 
-test_that("summary.simulate_affectOU burnin filters time points", {
+test_that("summary.simulate_affectOU discard_initial_time filters time points", {
   model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
   sim <- simulate(model, stop = 10, dt = .1, save_at = .1, nsim = 1)
 
-  s_no_burnin <- summary(sim, burnin = 0)
-  s_with_burnin <- summary(sim, burnin = 5)
+  s_no_discard <- summary(sim, discard_initial_time = 0)
+  s_with_discard <- summary(sim, discard_initial_time = 5)
 
   # Full simulation has 101 time points (0 to 10 by 0.1)
-  expect_equal(s_no_burnin$n_timepoints, 101)
+  expect_equal(s_no_discard$n_timepoints, 101)
 
-  # With burnin = 5, should have 51 time points (5.0 to 10 by 0.1)
-  expect_equal(s_with_burnin$n_timepoints, 51)
-  expect_equal(s_with_burnin$burnin, 5)
+  # With discard_initial_time = 5, should have 51 time points (5.0 to 10 by 0.1)
+  expect_equal(s_with_discard$n_timepoints, 51)
+  expect_equal(s_with_discard$discard_initial_time, 5)
 })
 
-test_that("summary.simulate_affectOU validates burnin parameter", {
+test_that("summary.simulate_affectOU validates discard_initial_time parameter", {
   model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
   sim <- simulate(model, stop = 10, dt = .1, save_at = .1, nsim = 1)
 
-  expect_error(summary(sim, burnin = -1))
-  expect_error(summary(sim, burnin = 10)) # burnin >= stop
-  expect_error(summary(sim, burnin = "a"))
-  expect_error(summary(sim, burnin = c(1, 2)))
+  expect_error(summary(sim, discard_initial_time = -1))
+  expect_error(summary(sim, discard_initial_time = 10)) # discard_initial_time >= stop
+  expect_error(summary(sim, discard_initial_time = "a"))
+  expect_error(summary(sim, discard_initial_time = c(1, 2)))
 })
 
 test_that("summary.simulate_affectOU computes reasonable statistics", {
   # Long simulation should converge to theoretical values
   model <- affectOU(theta = 0.5, mu = 2, gamma = 1)
   sim <- simulate(model, stop = 1000, dt = .1, save_at = .1, nsim = 10, seed = 123)
-  s <- summary(sim, burnin = 100)
+  s <- summary(sim, discard_initial_time = 100)
 
   # Sample mean should be close to theoretical mean (mu = 2)
   expect_equal(s$statistics$mean, s$theoretical$mean, tolerance = 0.1)
@@ -645,7 +645,7 @@ test_that("print.summary_simulate_affectOU returns invisibly", {
 cli::test_that_cli(config = c("plain", "ansi"), "print.summary_simulate_affectOU snapshot (1D stationary)", {
   model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
   sim <- simulate(model, stop = 100, dt = .1, save_at = .1, nsim = 5, seed = 123)
-  s <- summary(sim, burnin = 10)
+  s <- summary(sim, discard_initial_time = 10)
 
   expect_snapshot(print(s))
 })
@@ -653,7 +653,7 @@ cli::test_that_cli(config = c("plain", "ansi"), "print.summary_simulate_affectOU
 cli::test_that_cli(config = c("plain", "ansi"), "print.summary_simulate_affectOU respects digits", {
   model <- affectOU(theta = 0.5, mu = 0, gamma = 1)
   sim <- simulate(model, stop = 100, dt = .1, save_at = .1, nsim = 5, seed = 123)
-  s <- summary(sim, burnin = 10)
+  s <- summary(sim, discard_initial_time = 10)
 
   expect_snapshot(print(s, digits = 2))
 })
@@ -661,7 +661,7 @@ cli::test_that_cli(config = c("plain", "ansi"), "print.summary_simulate_affectOU
 cli::test_that_cli(config = c("plain", "ansi"), "print.summary_simulate_affectOU snapshot (2D stationary)", {
   model <- affectOU(ndim = 2, theta = diag(c(0.5, 0.3)), mu = c(1, -1))
   sim <- simulate(model, stop = 100, dt = .1, save_at = .1, nsim = 3, seed = 456)
-  s <- summary(sim, burnin = 20)
+  s <- summary(sim, discard_initial_time = 20)
 
   expect_snapshot(print(s))
 })
@@ -680,7 +680,7 @@ cli::test_that_cli(config = c("plain", "ansi"), "print.summary_simulate_affectOU
   ndim <- 25
   model <- affectOU(ndim = ndim, theta = diag(ndim) * 0.5, mu = rep(0, ndim))
   sim <- simulate(model, stop = 50, dt = .1, save_at = .1, nsim = 2, seed = 101)
-  s <- summary(sim, burnin = 10)
+  s <- summary(sim, discard_initial_time = 10)
 
   expect_snapshot(print(s))
 })

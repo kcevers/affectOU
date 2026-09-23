@@ -4,7 +4,7 @@
 \alias{get_layout}
 \title{Calculate layout dimensions for multi-panel plots}
 \usage{
-get_layout(n, P, user_args = list(), by_dim = TRUE)
+get_layout(n, P, user_args = list(), by_dim = TRUE, call = rlang::caller_env())
 }
 \arguments{
 \item{n}{Number of panels needed}
@@ -14,6 +14,10 @@ get_layout(n, P, user_args = list(), by_dim = TRUE)
 \item{user_args}{Original user arguments (to check for mfrow/mfcol)}
 
 \item{by_dim}{Logical; plot each dimension in separate panel?}
+
+\item{call}{Environment used to report errors. Relevant only when
+calling this function from another function, so that errors name the
+function the user called.}
 }
 \value{
 List with nrow and ncol

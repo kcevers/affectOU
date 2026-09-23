@@ -37,7 +37,11 @@ solve_lyapunov <- function(theta, sigma) {
   # Verify solution
   residual <- max(abs(theta %*% sigma_inf + sigma_inf %*% t(theta) - sigma))
   if (residual > 1e-10) {
-    cli::cli_warn("Lyapunov solution may be inaccurate. Residual: {residual}.")
+    cli::cli_warn(c(
+      "!" = "The stationary covariance may be inaccurate.",
+      "x" = "The Lyapunov solution has residual {signif(residual, 1)}.",
+      "i" = "This usually means {.arg theta} is close to non-stationary."
+    ))
   }
 
   sigma_inf
