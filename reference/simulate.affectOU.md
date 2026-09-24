@@ -12,7 +12,7 @@ simulate(
   object,
   nsim = 1,
   seed = NULL,
-  initial_state = NULL,
+  initial = NULL,
   dt = 0.01,
   stop = 100,
   save_at = dt,
@@ -28,30 +28,37 @@ simulate(
 
 - nsim:
 
-  Number of replications to simulate.
+  How many independent trajectories to simulate. A whole number of at
+  least 1.
 
 - seed:
 
-  Random seed for reproducibility.
+  The random seed, so a simulation can be reproduced. A whole number, or
+  `NULL` to leave the random state alone.
 
-- initial_state:
+- initial:
 
-  Optional initial state vector. If `NULL`, defaults to a draw from the
-  stationary distribution (if stable) or the attractor location `mu` (if
-  non-stable).
+  The affect value each trajectory starts from. A single number, or a
+  vector with one element per dimension. If `NULL`, defaults to a draw
+  from the stationary distribution (for stable systems) or the attractor
+  location `mu` (for non-stable systems).
 
 - dt:
 
-  Time step for Euler-Maruyama discretization (smaller = more accurate).
+  The time step the simulation advances by, for the Euler-Maruyama
+  discretization (smaller = more accurate). Must be larger than 0.
 
 - stop:
 
-  Total simulation time.
+  How long the simulated period lasts, in time units. Must be larger
+  than 0.
 
 - save_at:
 
-  Time interval at which to save simulated data; used to linearly
-  interpolate results. Useful for reducing output size.
+  The time interval at which simulated data is saved, in time units;
+  used to linearly interpolate results. Useful for reducing output size.
+  Must be at least `dt`, because states are only computed every `dt`
+  time units, and at most `stop`, or nothing would be recorded.
 
 - ...:
 
@@ -113,19 +120,19 @@ summary(sim)
 #> ── Comparison to theoretical distribution ──
 #> 
 #> Mean:
-#>               dim1  dim2
-#> Simulated   -0.099 0.217
-#> Theoretical  0.000 0.000
+#>              dim1   dim2
+#> Simulated   0.438 -0.021
+#> Theoretical 0.000  0.000
 #> 
 #> SD:
 #>              dim1  dim2
-#> Simulated   0.873 0.963
+#> Simulated   0.934 0.913
 #> Theoretical 1.000 1.000
 #> 
 #> Covariance (simulated):
 #>       [,1]  [,2]
-#> [1,] 0.762 0.033
-#> [2,] 0.033 0.927
+#> [1,] 0.872 0.022
+#> [2,] 0.022 0.833
 #> 
 #> Covariance (theoretical):
 #>      [,1] [,2]
@@ -133,25 +140,25 @@ summary(sim)
 #> [2,]    0    1
 #> 
 #> Correlation (simulated):
-#>      [,1] [,2]
-#> [1,] 1.00 0.04
-#> [2,] 0.04 1.00
+#>       [,1]  [,2]
+#> [1,] 1.000 0.026
+#> [2,] 0.026 1.000
 #> 
 #> Correlation (theoretical):
 #>      [,1] [,2]
 #> [1,]    1    0
 #> [2,]    0    1
 head(sim)
-#>   time dim sim      value
-#> 1 0.00   1   1 -0.6940882
-#> 2 0.01   1   1 -0.7336170
-#> 3 0.02   1   1 -0.7259402
-#> 4 0.03   1   1 -0.4052939
-#> 5 0.04   1   1 -0.4127906
-#> 6 0.05   1   1 -0.2927063
+#>   time dim sim     value
+#> 1 0.00   1   1 0.3688494
+#> 2 0.01   1   1 0.4684450
+#> 3 0.02   1   1 0.6321258
+#> 4 0.03   1   1 0.6038426
+#> 5 0.04   1   1 0.6625987
+#> 6 0.05   1   1 0.4958355
 
 # Specify initial state
-sim <- simulate(model, initial_state = c(1, -1))
+sim <- simulate(model, initial = c(1, -1))
 plot(sim)
 
 

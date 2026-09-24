@@ -24,7 +24,7 @@ coef(object, ...)
 ## Value
 
 A list containing the model parameters: `theta`, `mu`, `gamma`, and
-`sigma`. For 1D models, these are returned as numeric scalars. For
+`sigma`. For 1D models, these are returned as single numbers. For
 multivariate models, they are returned as matrices.
 
 ## See also

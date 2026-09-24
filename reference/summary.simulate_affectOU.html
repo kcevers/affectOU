@@ -17,7 +17,7 @@ when the model is stationary."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">affectOU</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,7 +63,7 @@ when the model is stationary.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'simulate_affectOU'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">object</span>, burnin <span class="op">=</span> <span class="fl">0</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">object</span>, discard_initial_time <span class="op">=</span> <span class="fl">0</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -74,10 +74,11 @@ when the model is stationary.</p>
 <dd><p>A <code>simulate_affectOU</code> object</p></dd>
 
 
-<dt id="arg-burnin">burnin<a class="anchor" aria-label="anchor" href="#arg-burnin"></a></dt>
-<dd><p>Time to exclude from the start of simulations (in time units,
-not time points). Useful for allowing the process to reach stationarity.
-Default is 0.</p></dd>
+<dt id="arg-discard-initial-time">discard_initial_time<a class="anchor" aria-label="anchor" href="#arg-discard-initial-time"></a></dt>
+<dd><p>How much of the start to discard, so the
+process has settled before it is summarised – what simulation studies
+call burn-in. Measured in time units, like <code>stop</code>, and must be less than
+the simulated period, or nothing would remain. Default is 0.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -93,10 +94,10 @@ Default is 0.</p></dd>
 <dd><p>Number of simulations</p></dd>
 
 <dt>n_timepoints</dt>
-<dd><p>Number of time points used (after burnin)</p></dd>
+<dd><p>Number of time points used after discarding</p></dd>
 
-<dt>burnin</dt>
-<dd><p>Burnin time excluded</p></dd>
+<dt>discard_initial_time</dt>
+<dd><p>Amount of time discarded from the start</p></dd>
 
 <dt>dt</dt>
 <dd><p>Simulation time step</p></dd>
@@ -167,14 +168,14 @@ model is not stationary):</p><dl><dt>mean</dt>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Mean    -0.017           0</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> SD       0.975           1</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># With burnin to exclude initial transient</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sim</span>, burnin <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Discard the initial transient before summarising</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sim</span>, discard_initial_time <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">1D Ornstein-Uhlenbeck Simulation Summary (10 replications)</span> <span style="color: #00BBBB;">──────────────────</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ── <span style="font-weight: bold;">Simulation settings</span> ──</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Time: 10.000 → 100.000 (burnin: 10.000)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Time: 10.000 → 100.000 (first 10.000 discarded)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Time points: 901; dt: 0.1; save_at: 0.1</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Seed: 123</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
@@ -187,13 +188,13 @@ model is not stationary):</p><dl><dt>mean</dt>
 <span class="r-in"><span><span class="co"># 2D stationary model</span></span></span>
 <span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="affectOU.html">affectOU</a></span><span class="op">(</span>ndim <span class="op">=</span> <span class="fl">2</span>, theta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.3</span><span class="op">)</span><span class="op">)</span>, mu <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span><span class="va">model</span>, stop <span class="op">=</span> <span class="fl">100</span>, dt <span class="op">=</span> <span class="fl">0.1</span>, nsim <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">456</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sim</span>, burnin <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sim</span>, discard_initial_time <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">2D Ornstein-Uhlenbeck Simulation Summary (5 replications)</span> <span style="color: #00BBBB;">───────────────────</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ── <span style="font-weight: bold;">Simulation settings</span> ──</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Time: 20.000 → 100.000 (burnin: 20.000)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Time: 20.000 → 100.000 (first 20.000 discarded)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Time points: 801; dt: 0.1; save_at: 0.1</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Seed: 456</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>

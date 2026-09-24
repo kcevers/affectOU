@@ -20,7 +20,8 @@ summary(object, level = 0.95, ...)
 
 - level:
 
-  Confidence level for intervals (default 0.95).
+  Confidence level for intervals: a number between 0 and 1 (default
+  0.95).
 
 - ...:
 
@@ -74,12 +75,12 @@ summary(fitted)
 #> ── Coefficients ──
 #> 
 #>       Estimate    SE          95% CI
-#> theta    0.481 0.045  [0.393, 0.570]
-#> mu       0.106 0.094 [-0.078, 0.289]
-#> gamma    1.007 0.010  [0.987, 1.027]
+#> theta    0.489 0.045  [0.400, 0.578]
+#> mu       0.108 0.092 [-0.073, 0.289]
+#> gamma    1.008 0.010  [0.988, 1.029]
 #> 
 #> ── Goodness of fit ──
 #> 
-#> Log-likelihood: -1253.674
+#> Log-likelihood: -1258.897
 #> RMSE: 0.311
 ```

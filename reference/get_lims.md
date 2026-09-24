@@ -5,7 +5,15 @@ Calculate axis limits for multiple panels
 ## Usage
 
 ``` r
-get_lims(data, ndim, nsim, lim = NULL, share_axis = FALSE, include = NULL)
+get_lims(
+  data,
+  ndim,
+  nsim,
+  lim = NULL,
+  share_axis = FALSE,
+  include = NULL,
+  call = rlang::caller_env()
+)
 ```
 
 ## Arguments

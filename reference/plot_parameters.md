@@ -76,3 +76,9 @@ Plot parameter documentation
 - ...:
 
   Additional graphical parameters
+
+- call:
+
+  Environment used to report errors. Relevant only when calling this
+  function from another function, so that errors name the function the
+  user called.

@@ -26,27 +26,32 @@ update(
 
 - ndim:
 
-  Optional. New dimensionality of the affect process.
+  Optional. New number of affect dimensions modelled.
 
 - theta:
 
-  Optional. New attractor strength (scalar or matrix).
+  Optional. New value for how quickly affect returns to baseline (a
+  single number or a matrix).
 
 - mu:
 
-  Optional. New attractor location (scalar or vector).
+  Optional. New baseline affect the process returns to (a single number
+  or a vector).
 
 - gamma:
 
-  Optional. New diffusion coefficient (scalar or lower triangular
-  matrix). Only `gamma` or `sigma` can be specified, not both. If
-  `sigma` is provided, `gamma` is computed via Cholesky decomposition.
+  Optional. New value for how strongly affect responds to ongoing random
+  fluctuation (a single number or a lower triangular matrix). Specify
+  either `gamma` or `sigma`, not both. If `sigma` is provided, `gamma`
+  is computed via Cholesky decomposition.
 
 - sigma:
 
-  Optional. New noise covariance (scalar or positive semi-definite
-  matrix). Only `gamma` or `sigma` can be specified, not both. If
-  `gamma` is provided, `sigma` is computed as `gamma %*% t(gamma)`.
+  Optional. New noise covariance: how much random fluctuation drives
+  each dimension and how those fluctuations move together (a single
+  number or a symmetric, positive semi-definite matrix). Specify either
+  `gamma` or `sigma`, not both. If `gamma` is provided, `sigma` is
+  computed as `gamma %*% t(gamma)`.
 
 - ...:
 

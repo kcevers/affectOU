@@ -49,6 +49,6 @@ print(summary(sim))
 #> ── Comparison to theoretical distribution ──
 #> 
 #>      Simulated Theoretical
-#> Mean     0.152           0
-#> SD       1.019           1
+#> Mean    -0.015           0
+#> SD       1.014           1
 ```

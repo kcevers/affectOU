@@ -8,7 +8,7 @@ when the model is stationary.
 
 ``` r
 # S3 method for class 'simulate_affectOU'
-summary(object, burnin = 0, ...)
+summary(object, discard_initial_time = 0, ...)
 ```
 
 ## Arguments
@@ -17,11 +17,12 @@ summary(object, burnin = 0, ...)
 
   A `simulate_affectOU` object
 
-- burnin:
+- discard_initial_time:
 
-  Time to exclude from the start of simulations (in time units, not time
-  points). Useful for allowing the process to reach stationarity.
-  Default is 0.
+  How much of the start to discard, so the process has settled before it
+  is summarised – what simulation studies call burn-in. Measured in time
+  units, like `stop`, and must be less than the simulated period, or
+  nothing would remain. Default is 0.
 
 - ...:
 
@@ -41,11 +42,11 @@ An object of class `summary_simulate_affectOU` containing:
 
 - n_timepoints:
 
-  Number of time points used (after burnin)
+  Number of time points used after discarding
 
-- burnin:
+- discard_initial_time:
 
-  Burnin time excluded
+  Amount of time discarded from the start
 
 - dt:
 
@@ -126,14 +127,14 @@ summary(sim)
 #> Mean    -0.017           0
 #> SD       0.975           1
 
-# With burnin to exclude initial transient
-summary(sim, burnin = 10)
+# Discard the initial transient before summarising
+summary(sim, discard_initial_time = 10)
 #> 
 #> ── 1D Ornstein-Uhlenbeck Simulation Summary (10 replications) ──────────────────
 #> 
 #> ── Simulation settings ──
 #> 
-#> Time: 10.000 → 100.000 (burnin: 10.000)
+#> Time: 10.000 → 100.000 (first 10.000 discarded)
 #> Time points: 901; dt: 0.1; save_at: 0.1
 #> Seed: 123
 #> 
@@ -146,13 +147,13 @@ summary(sim, burnin = 10)
 # 2D stationary model
 model <- affectOU(ndim = 2, theta = diag(c(0.5, 0.3)), mu = c(1, -1))
 sim <- simulate(model, stop = 100, dt = 0.1, nsim = 5, seed = 456)
-summary(sim, burnin = 20)
+summary(sim, discard_initial_time = 20)
 #> 
 #> ── 2D Ornstein-Uhlenbeck Simulation Summary (5 replications) ───────────────────
 #> 
 #> ── Simulation settings ──
 #> 
-#> Time: 20.000 → 100.000 (burnin: 20.000)
+#> Time: 20.000 → 100.000 (first 20.000 discarded)
 #> Time points: 801; dt: 0.1; save_at: 0.1
 #> Seed: 456
 #> 

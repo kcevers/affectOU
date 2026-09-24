@@ -14,39 +14,51 @@ affectOU(ndim = 1, theta = 0.5, mu = 0, sigma = 1, gamma = t(chol(sigma)))
 
 - ndim:
 
-  Dimensionality of the affect process. Defaults to 1 (univariate). Only
-  needs to be specified if it cannot be inferred from the dimensions of
-  the other parameters.
+  The number of affect dimensions modelled. Defaults to 1 (univariate).
+  Only needs to be specified if it cannot be inferred from the
+  dimensions of the other parameters. Must be a whole number of at least
+  1.
 
 - theta:
 
-  Attractor strength (rate of return to baseline). For 1D: positive
-  scalar. For multidimensional: square matrix.
+  How quickly affect returns to baseline – low values mean feelings
+  linger (inertia or rumination). Formally the attractor strength, or
+  drift matrix. For 1D: a single number. For multidimensional: a square
+  matrix, whose off-diagonal elements set the temporal coupling between
+  dimensions. When `theta < 0`, the model is non-stationary: the process
+  is pushed away from `mu` rather than toward it; when
+  `theta \approx 0`, the model is a random walk and `mu` has no
+  meaningful influence on the trajectory.
 
 - mu:
 
-  Attractor location (baseline affect or set point). For 1D: scalar. For
-  multidimensional: vector. For non-stationary models: when \\\theta \<
-  0\\, the process is pushed away from \\\mu\\ rather than toward it;
-  when \\\theta \approx 0\\, \\\mu\\ has no meaningful influence on the
-  trajectory.
+  The baseline affect the process returns to – a person's typical mood.
+  Formally the attractor location. For 1D: a single number. For
+  multidimensional: a vector with one element per dimension.
 
 - sigma:
 
-  Noise covariance matrix (\\\Sigma = \Gamma\Gamma^\top\\). For 1D:
-  positive scalar (variance). For multidimensional: positive
-  semi-definite matrix. Off-diagonal elements represent correlated noise
-  between dimensions. This is the recommended way to specify noise
-  structure. Specifying both `gamma` and `sigma` is an error.
+  How much random fluctuation drives each affect dimension, and how
+  those fluctuations move together. Formally the noise covariance matrix
+  (\\\Sigma = \Gamma\Gamma^\top\\). For 1D: a single number, the
+  variance, which cannot be negative. For multidimensional: a symmetric,
+  positive semi-definite matrix – symmetric because the covariance
+  between two dimensions is the same in either direction, and positive
+  semi-definite because otherwise some combination of dimensions would
+  have a negative variance. Off-diagonal elements represent correlated
+  noise between dimensions. This is the recommended way to specify noise
+  structure. Specify either `gamma` or `sigma`, not both.
 
 - gamma:
 
-  Diffusion coefficient (multiplies \\dW(t)\\ in the SDE). For 1D:
-  positive scalar. For multidimensional: lower triangular matrix (the
-  Cholesky factor of \\\Sigma\\). Specifying both `gamma` and `sigma` is
-  an error. Most users should prefer specifying `sigma` directly;
-  `gamma` is available for advanced users who want explicit control over
-  the Cholesky factorisation.
+  How strongly affect responds to ongoing random fluctuation. Formally
+  the diffusion coefficient (multiplies \\dW(t)\\ in the SDE). For 1D: a
+  single number. For multidimensional: a lower triangular matrix (the
+  Cholesky factor of \\\Sigma\\); it must be lower triangular because it
+  is the square root of a covariance matrix. Specify either `gamma` or
+  `sigma`, not both: each determines the other. Most users should prefer
+  specifying `sigma` directly; `gamma` is available for advanced users
+  who want explicit control over the Cholesky factorisation.
 
 ## Value
 
@@ -168,19 +180,16 @@ summary(model_1d)
 #> Mean: 0
 #> SD: 1
 #> ℹ Use `stability()` and `stationary()` for more details.
-coef(model_1d)
-#> $theta
-#> [1] 0.5
-#> 
-#> $mu
-#> [1] 0
-#> 
-#> $gamma
-#> [1] 1
-#> 
-#> $sigma
-#> [1] 1
-#> 
+
+# Simulate trajectory
+sim <- simulate(model_1d)
+plot(sim)
+
+
+# Simulate from a different initial state and a shorter period
+sim <- simulate(model_1d, initial = 1, stop = 10)
+plot(sim)
+
 
 # 2D model (uncoupled)
 model_2d <- affectOU(

@@ -123,8 +123,8 @@ from scratch:
 model_2d <- update(
   model_2d,
   theta = diag(c(0.5, 0.3)), # Different regulation speeds
-  mu = c(0, 1),              # Different baselines
-  sigma = diag(c(1, 0.5))   # Different noise levels
+  mu = c(0, 1), # Different baselines
+  sigma = diag(c(1, 0.5)) # Different noise levels
 )
 
 model_2d
@@ -237,10 +237,10 @@ changing the arguments:
 
 sim <- simulate(
   model,
-  nsim = 1, 
-  dt = 0.01, 
-  stop = 100, 
-  save_at = 0.1, 
+  nsim = 1,
+  dt = 0.01,
+  stop = 100,
+  save_at = 0.1,
   seed = 42
 )
 
@@ -573,7 +573,7 @@ to them as a typical diagonistic plot used for linear regression
 models.](affectOU_files/figure-html/plot-fit-residuals-1.svg)
 
 See
-[`plot()`](https://kcevers.github.io/affectOU/reference/plot.fit.affectOU.md)
+[`plot()`](https://kcevers.github.io/affectOU/reference/plot.fit_affectOU.md)
 for more details on available diagnostics and their interpretations.
 
 ## Extract Equation

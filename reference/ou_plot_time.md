@@ -37,7 +37,8 @@ x[["nsim"]]
   xlab = "Time",
   ylab = "Affect",
   legend_position = "topright",
-  ...
+  ...,
+  call = rlang::current_env()
 )
 ```
 
@@ -106,6 +107,12 @@ x[["nsim"]]
 - ...:
 
   Additional graphical parameters
+
+- call:
+
+  Environment used to report errors. Relevant only when calling this
+  function from another function, so that errors name the function the
+  user called.
 
 ## Value
 

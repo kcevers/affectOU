@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">affectOU</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,12 +69,14 @@
 
 
 <dt id="arg-parm">parm<a class="anchor" aria-label="anchor" href="#arg-parm"></a></dt>
-<dd><p>Optional character vector of parameter names to include.
+<dd><p>Optional character vector naming parameters of the fitted
+model to include: any of <code>theta</code>, <code>mu</code>, and <code>gamma</code>.
 If missing, all parameters are included.</p></dd>
 
 
 <dt id="arg-level">level<a class="anchor" aria-label="anchor" href="#arg-level"></a></dt>
-<dd><p>Confidence level for intervals (default 0.95).</p></dd>
+<dd><p>Confidence level for intervals: a number between 0 and 1
+(default 0.95).</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -93,10 +95,10 @@ If missing, all parameters are included.</p></dd>
 <span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">sim</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fitted</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit</a></span><span class="op">(</span><span class="va">model</span>, data <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">value</span>, times <span class="op">=</span> <span class="va">data</span><span class="op">$</span><span class="va">time</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">fitted</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              2.5%     97.5%</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> theta  0.40084091 0.5783782</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> mu    -0.07834226 0.2792836</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> gamma  0.97863185 1.0187391</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             2.5%     97.5%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> theta  0.3836220 0.5578238</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> mu    -0.1745091 0.1936820</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> gamma  0.9687320 1.0083990</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

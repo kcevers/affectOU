@@ -18,12 +18,14 @@ confint(object, parm, level = 0.95, ...)
 
 - parm:
 
-  Optional character vector of parameter names to include. If missing,
-  all parameters are included.
+  Optional character vector naming parameters of the fitted model to
+  include: any of `theta`, `mu`, and `gamma`. If missing, all parameters
+  are included.
 
 - level:
 
-  Confidence level for intervals (default 0.95).
+  Confidence level for intervals: a number between 0 and 1 (default
+  0.95).
 
 - ...:
 
@@ -41,8 +43,8 @@ sim <- simulate(model, stop = 500, dt = 0.01, save_at = 0.1)
 data <- as.data.frame(sim)
 fitted <- fit(model, data = data$value, times = data$time)
 confint(fitted)
-#>              2.5%     97.5%
-#> theta  0.40084091 0.5783782
-#> mu    -0.07834226 0.2792836
-#> gamma  0.97863185 1.0187391
+#>             2.5%     97.5%
+#> theta  0.3836220 0.5578238
+#> mu    -0.1745091 0.1936820
+#> gamma  0.9687320 1.0083990
 ```

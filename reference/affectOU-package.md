@@ -38,5 +38,8 @@ Useful links:
 
 Authors:
 
+- Kyra Caitlin Evers <kyra.c.evers@gmail.com>
+  ([ORCID](https://orcid.org/0000-0001-6890-3482)) \[copyright holder\]
+
 - Niels Vanhasbroeck <niels.vanhasbroeck@gmail.com>
   ([ORCID](https://orcid.org/0000-0002-0056-3183))

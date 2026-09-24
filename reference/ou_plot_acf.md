@@ -31,7 +31,8 @@ ou_plot_acf(
   xlab = "Lag (time)",
   ylab = ifelse(x[["model"]][["ndim"]] == 1, "ACF", "ACF / CCF"),
   legend_position = "topright",
-  ...
+  ...,
+  call = rlang::current_env()
 )
 ```
 
@@ -103,6 +104,12 @@ ou_plot_acf(
 - ...:
 
   Additional graphical parameters
+
+- call:
+
+  Environment used to report errors. Relevant only when calling this
+  function from another function, so that errors name the function the
+  user called.
 
 ## Value
 

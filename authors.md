@@ -14,13 +14,13 @@ Source:
 [`DESCRIPTION`](https://github.com/kcevers/affectOU/blob/main/DESCRIPTION)
 
 Evers K, Vanhasbroeck N (2026). *affectOU: Simulate Affect Dynamics with
-Ornstein-Uhlenbeck Processes*. R package version 1.0.2,
+Ornstein-Uhlenbeck Processes*. R package version 1.0.3,
 <https://github.com/kcevers/affectOU>.
 
     @Manual{,
       title = {affectOU: Simulate Affect Dynamics with Ornstein-Uhlenbeck Processes},
       author = {Kyra Caitlin Evers and Niels Vanhasbroeck},
       year = {2026},
-      note = {R package version 1.0.2},
+      note = {R package version 1.0.3},
       url = {https://github.com/kcevers/affectOU},
     }

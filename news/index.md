@@ -1,5 +1,21 @@
 # Changelog
 
+## affectOU 1.0.3
+
+- Improved error messages. For example, errors on domain constraints now
+  explain the constraint in terms of affect dynamics.
+- Conditions now carry `affectOU_error_*` classes, so they can be caught
+  programmatically with
+  [`tryCatch()`](https://rdrr.io/r/base/conditions.html) or tested with
+  `expect_error(class = ...)`.
+- **Breaking:** the `initial_state` argument of
+  [`simulate()`](https://rdrr.io/r/stats/simulate.html) is now
+  `initial`, and the `burnin` argument of
+  [`summary()`](https://rdrr.io/r/base/summary.html) for simulations is
+  now `discard_initial_time`.
+- New explicit dependency on rlang (\>= 1.2.0), which cli already
+  required.
+
 ## affectOU 1.0.2
 
 - Fixed [`summary()`](https://rdrr.io/r/base/summary.html) for

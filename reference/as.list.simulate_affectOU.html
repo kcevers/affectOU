@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">affectOU</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -103,24 +103,24 @@ with a dimension indicator.</p></dd>
 <span class="r-in"><span><span class="co"># Wide format (default): one column per dimension</span></span></span>
 <span class="r-in"><span><span class="va">lst_wide</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">sim</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">lst_wide</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   time       dim1      dim2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.00 -0.2036899 -1.182427</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.01 -0.1850442 -1.127589</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.02 -0.1028183 -1.230978</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.03 -0.1129939 -1.159538</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 0.04 -0.1981627 -1.017135</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 0.05 -0.1529370 -1.072746</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   time       dim1     dim2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.00 -1.3552878 2.000128</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.01 -1.2908799 1.945195</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.02 -1.2148140 1.830952</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.03 -1.1810163 1.926792</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 0.04 -1.0976496 1.830134</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 0.05 -0.8316487 1.919672</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Long format: single value column with dimension indicator</span></span></span>
 <span class="r-in"><span><span class="va">lst_long</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">sim</span>, direction <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">lst_long</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   time  dim      value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.00 dim1 -0.2036899</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.01 dim1 -0.1850442</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.02 dim1 -0.1028183</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.03 dim1 -0.1129939</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 0.04 dim1 -0.1981627</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 0.05 dim1 -0.1529370</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.00 dim1 -1.3552878</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.01 dim1 -1.2908799</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.02 dim1 -1.2148140</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.03 dim1 -1.1810163</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 0.04 dim1 -1.0976496</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 0.05 dim1 -0.8316487</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

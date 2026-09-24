@@ -32,5 +32,5 @@ sim <- simulate(model, stop = 500, dt = 0.01, save_at = 0.1)
 data <- as.data.frame(sim)
 fitted <- fit(model, data = data$value, times = data$time)
 logLik(fitted)
-#> 'log Lik.' -1190.814 (df=3)
+#> 'log Lik.' -1231.131 (df=3)
 ```

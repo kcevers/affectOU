@@ -15,7 +15,7 @@ via maximum likelihood. Currently limited to univariate (1D) models."></head><bo
 
     <a class="navbar-brand me-2" href="../index.html">affectOU</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,16 +72,19 @@ via maximum likelihood. Currently limited to univariate (1D) models.</p>
 
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>Numeric vector of observed affect values.</p></dd>
+<dd><p>A numeric vector of observed affect values. Must contain at
+least 2 finite observations.</p></dd>
 
 
 <dt id="arg-times">times<a class="anchor" aria-label="anchor" href="#arg-times"></a></dt>
-<dd><p>Numeric vector of observation times.
+<dd><p>A numeric vector of observation times, the same length as
+<code>data</code> and strictly increasing, since observations are ordered in time
+with no repeated time points. If <code>NULL</code>, unit spacing is assumed.
 If <code>NULL</code>, defaults to equally spaced times: 0, 1, 2, …</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>Character string specifying estimation method.
+<dd><p>A single string naming the estimation method.
 Currently only <code>"mle"</code> (i.e., maximum likelihood estimation)
 is supported.</p></dd>
 
@@ -152,8 +155,8 @@ and <code>gamma</code> is initialized based on the stationary variance estimate.
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Fitted 1D Ornstein-Uhlenbeck Model</span> <span style="color: #00BBBB;">──────────────────────────────────────────</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 100001 data points (dt ≈ 0.010)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-style: italic;">θ</span> = 0.000, <span style="font-style: italic;">μ</span> = 0.006, <span style="font-style: italic;">γ</span> = 1.003</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Log-likelihood: 88035.991</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-style: italic;">θ</span> = 0.000, <span style="font-style: italic;">μ</span> = -0.129, <span style="font-style: italic;">γ</span> = 1.002</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Log-likelihood: 88122.168</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> RMSE: 0.100</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fitted</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="fit.affectOU-1.svg" alt="" width="700" height="433"></span>

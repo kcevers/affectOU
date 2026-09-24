@@ -33,5 +33,5 @@ data <- as.data.frame(sim)
 fitted <- fit(model, data = data$value, times = data$time)
 coef(fitted)
 #>      theta         mu      gamma 
-#> 0.44364036 0.02915507 1.00347331 
+#> 0.46944574 0.09244214 1.00954498 
 ```

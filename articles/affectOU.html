@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">affectOU</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -183,8 +183,8 @@ from scratch:</p>
 <code class="sourceCode R"><span><span class="va">model_2d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span></span>
 <span>  <span class="va">model_2d</span>,</span>
 <span>  theta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.3</span><span class="op">)</span><span class="op">)</span>, <span class="co"># Different regulation speeds</span></span>
-<span>  mu <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,              <span class="co"># Different baselines</span></span>
-<span>  sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span>   <span class="co"># Different noise levels</span></span>
+<span>  mu <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, <span class="co"># Different baselines</span></span>
+<span>  sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span> <span class="co"># Different noise levels</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">model_2d</span></span>
@@ -297,10 +297,10 @@ perturbations.</li>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate</a></span><span class="op">(</span></span>
 <span>  <span class="va">model</span>,</span>
-<span>  nsim <span class="op">=</span> <span class="fl">1</span>, </span>
-<span>  dt <span class="op">=</span> <span class="fl">0.01</span>, </span>
-<span>  stop <span class="op">=</span> <span class="fl">100</span>, </span>
-<span>  save_at <span class="op">=</span> <span class="fl">0.1</span>, </span>
+<span>  nsim <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  dt <span class="op">=</span> <span class="fl">0.01</span>,</span>
+<span>  stop <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  save_at <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">42</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -537,7 +537,7 @@ likelihood:</p>
 <code class="sourceCode R"><span><span class="co"># Residuals over time</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fitted</span>, type <span class="op">=</span> <span class="st">"residuals"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="affectOU_files/figure-html/plot-fit-residuals-1.svg" class="r-plt" alt="Visualization of the residuals left in the data after fitting the OU to them as a typical diagonistic plot used for linear regression models." width="768"></p>
-<p>See <a href="../reference/plot.fit.affectOU.html"><code>plot()</code></a> for
+<p>See <a href="../reference/plot.fit_affectOU.html"><code>plot()</code></a> for
 more details on available diagnostics and their interpretations.</p>
 </div>
 <div class="section level2">

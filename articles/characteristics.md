@@ -77,16 +77,16 @@ Show code
 
 ``` r
 
-# For simplicity and ease of visualisation, we specify both processes in the same model. 
-# However, as they are uncoupled, they will evolve independently over time. 
+# For simplicity and ease of visualisation, we specify both processes in the same model.
+# However, as they are uncoupled, they will evolve independently over time.
 model <- affectOU(
   theta = diag(c(5.0, 0.5))
 )
 
 # Simulate and plot timeseries
 sim <- simulate(
-  model, 
-  seed = 123, 
+  model,
+  seed = 123,
   stop = 20
 )
 
@@ -249,8 +249,8 @@ Show code
 
 ``` r
 
-# For simplicity and ease of visualisation, we specify both processes in the same model. 
-# However, as they are uncoupled, they will evolve independently over time. 
+# For simplicity and ease of visualisation, we specify both processes in the same model.
+# However, as they are uncoupled, they will evolve independently over time.
 model <- affectOU(theta = 0.5, mu = 0, sigma = diag(c(2.25, 0.09)))
 sim <- simulate(model, seed = 456, stop = 20)
 plot(sim,
@@ -369,11 +369,11 @@ Show code
 ``` r
 
 # For simplicity and ease of visualisation, we specify all processes in the same model.
-# However, as they are uncoupled, they will evolve independently over time. 
+# However, as they are uncoupled, they will evolve independently over time.
 model <- affectOU(theta = diag(c(0.5, 0.01, -0.3)))
 sim <- simulate(model, stop = 100, seed = 43)
-#> Warning: ! System is not stable; no stationary distribution exists.
-#> ℹ Defaulting `initial_state` to mu.
+#> Warning: ! The system is not stable, so no stationary distribution exists.
+#> ℹ `initial` defaults to `mu`.
 plot(sim,
   ylim = c(-10, 10), by_dim = FALSE,
   main = "Affect Dynamics of Different Stability Regimes",
@@ -419,7 +419,7 @@ Show code
 
 # Real eigenvalues: Smooth decay
 theta_real <- matrix(
-  c(0.2, 0.1, 0.1, 0.2), 
+  c(0.2, 0.1, 0.1, 0.2),
   nrow = 2
 )
 
@@ -428,7 +428,7 @@ eigen(theta_real)$values
 
 # Complex eigenvalues: Oscillatory decay
 theta_complex <- matrix(
-  c(0.2, -1, 1, 0.2), 
+  c(0.2, -1, 1, 0.2),
   nrow = 2
 )
 
@@ -454,13 +454,13 @@ seed <- 123
 sim_real <- simulate(
   model_real,
   stop = 50, seed = seed,
-  initial_state = c(-3, 3)
+  initial = c(-3, 3)
 )
 
 sim_complex <- simulate(
   model_complex,
   stop = 50, seed = seed,
-  initial_state = c(-3, 3)
+  initial = c(-3, 3)
 )
 
 # Plot the resulting time-series
@@ -495,10 +495,10 @@ Show code
 
 ``` r
 
-# Both complex and real eigenvalues: Combination of smooth and oscillatory 
+# Both complex and real eigenvalues: Combination of smooth and oscillatory
 # dynamics
 theta <- matrix(
-  c(0.2, 1, 0, 1, 0.2, -1, 0, 1, 0.2), 
+  c(0.2, 1, 0, 1, 0.2, -1, 0, 1, 0.2),
   nrow = 3
 )
 
@@ -518,9 +518,9 @@ model <- affectOU(
 seed <- 123
 sim <- simulate(
   model,
-  stop = 50, 
+  stop = 50,
   seed = seed,
-  initial_state = c(-3, 3, 4)
+  initial = c(-3, 3, 4)
 )
 
 # Plot the resulting time-series
@@ -549,7 +549,7 @@ gamma_2d <- matrix(c(
   1, 0,
   0.5, 1
 ), nrow = 2, byrow = TRUE)
-gamma_2d %*% t(gamma_2d)  # implied noise covariance Σ
+gamma_2d %*% t(gamma_2d) # implied noise covariance Σ
 
 model_2d <- affectOU(theta = 0.5, mu = 0, gamma = gamma_2d)
 sim_2d <- simulate(model_2d, seed = 105)

@@ -13,7 +13,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">affectOU</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,14 @@
       <small>Source: <a href="https://github.com/kcevers/affectOU/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.3" id="affectou-103">affectOU 1.0.3<a class="anchor" aria-label="anchor" href="#affectou-103"></a></h2>
+<ul><li>Improved error messages. For example, errors on domain constraints now explain the constraint in terms of affect dynamics.</li>
+<li>Conditions now carry <code>affectOU_error_*</code> classes, so they can be caught programmatically with <code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch()</a></code> or tested with <code>expect_error(class = ...)</code>.</li>
+<li>
+<strong>Breaking:</strong> the <code>initial_state</code> argument of <code><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate()</a></code> is now <code>initial</code>, and the <code>burnin</code> argument of <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> for simulations is now <code>discard_initial_time</code>.</li>
+<li>New explicit dependency on rlang (&gt;= 1.2.0), which cli already required.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.2" id="affectou-102">affectOU 1.0.2<a class="anchor" aria-label="anchor" href="#affectou-102"></a></h2>
 <ul><li>Fixed <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> for multivariate simulations so means, standard deviations, covariances, and correlations are pooled by dimension correctly when multiple simulations are summarized.</li>

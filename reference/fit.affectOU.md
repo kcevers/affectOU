@@ -19,16 +19,19 @@ fit(object, data, times = NULL, method = "mle", start = NULL, ...)
 
 - data:
 
-  Numeric vector of observed affect values.
+  A numeric vector of observed affect values. Must contain at least 2
+  finite observations.
 
 - times:
 
-  Numeric vector of observation times. If `NULL`, defaults to equally
-  spaced times: 0, 1, 2, …
+  A numeric vector of observation times, the same length as `data` and
+  strictly increasing, since observations are ordered in time with no
+  repeated time points. If `NULL`, unit spacing is assumed. If `NULL`,
+  defaults to equally spaced times: 0, 1, 2, …
 
 - method:
 
-  Character string specifying estimation method. Currently only `"mle"`
+  A single string naming the estimation method. Currently only `"mle"`
   (i.e., maximum likelihood estimation) is supported.
 
 - start:
@@ -110,8 +113,8 @@ print(fitted)
 #> 
 #> ── Fitted 1D Ornstein-Uhlenbeck Model ──────────────────────────────────────────
 #> 100001 data points (dt ≈ 0.010)
-#> θ = 0.000, μ = 0.006, γ = 1.003
-#> Log-likelihood: 88035.991
+#> θ = 0.000, μ = -0.129, γ = 1.002
+#> Log-likelihood: 88122.168
 #> RMSE: 0.100
 plot(fitted)
 ```
