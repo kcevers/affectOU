@@ -40,7 +40,7 @@ stationary <- function(object, ...) {
 #' For multivariate models, the stationary covariance matrix
 #' \eqn{\Sigma_\infty} solves the Lyapunov equation:
 #' \deqn{\Theta \Sigma_\infty + \Sigma_\infty \Theta^\top = \Gamma \Gamma^T}
-#' 
+#'
 #' Off-diagonal elements in \eqn{\Theta} (coupling between dimensions) can induce
 #' correlation at equilibrium even when the noise is independent.
 #'

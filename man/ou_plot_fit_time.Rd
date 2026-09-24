@@ -18,7 +18,7 @@ ou_plot_fit_time(
 \arguments{
 \item{fit}{A \code{fit_affectOU} object}
 
-\item{palette}{Color palette. Should be one of \code{\link[grDevices:palettes]{grDevices::hcl.pals()}}.}
+\item{palette}{Color palette. Should be one of \code{\link[grDevices:hcl.pals]{grDevices::hcl.pals()}}.}
 
 \item{alpha}{Alpha transparency for colors (0 = transparent, 1 = opaque)}
 

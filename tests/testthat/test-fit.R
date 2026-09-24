@@ -140,7 +140,7 @@ test_that("fit.affectOU warns when times not provided (1D)", {
 
   expect_warning(
     fit(model, data = data),
-    "`times` not provided. Assuming unit spacing"
+    "`times` was not supplied"
   )
 })
 
@@ -149,7 +149,7 @@ test_that("fit.affectOU requires matching data and times lengths (1D)", {
 
   expect_error(
     fit(model, data = rnorm(100), times = seq(0, 50, by = 1)),
-    "`data` and `times` must have the same length"
+    class = "affectOU_error_length_mismatch"
   )
 })
 
@@ -163,15 +163,15 @@ test_that("fit.affectOU validates observation times", {
   )
   expect_error(
     fit(model, data = data, times = c(0, 1, Inf, 2)),
-    "`times` contains non-finite values"
+    class = "affectOU_error_not_finite"
   )
   expect_error(
     fit(model, data = data, times = c(0, 1, 1, 2)),
-    "`times` must be strictly increasing"
+    class = "affectOU_error_times_not_increasing"
   )
   expect_error(
     fit(model, data = data, times = c(0, 1, 0.5, 2)),
-    "`times` must be strictly increasing"
+    class = "affectOU_error_times_not_increasing"
   )
 })
 
@@ -402,14 +402,17 @@ test_that("confint.fit_affectOU subsets parameters via parm", {
 
 test_that("confint.fit_affectOU errors on invalid parm names", {
   fit_obj <- quick_fit()
-  expect_error(confint(fit_obj, parm = "invalid"), "Invalid parameter names")
+  expect_error(
+    confint(fit_obj, parm = "invalid"),
+    class = "affectOU_error_unknown_parm"
+  )
 })
 
 test_that("confint.fit_affectOU errors on invalid level", {
   fit_obj <- quick_fit()
   expect_error(confint(fit_obj, level = 1.5), "between 0 and 1")
-  expect_error(confint(fit_obj, level = 0),   "between 0 and 1")
-  expect_error(confint(fit_obj, level = "a"), "single numeric value")
+  expect_error(confint(fit_obj, level = 0), "between 0 and 1")
+  expect_error(confint(fit_obj, level = "a"), "must be a number")
 })
 
 
@@ -448,10 +451,10 @@ test_that("summary.fit_affectOU scalars match fit object", {
   fit_obj <- quick_fit()
   s <- summary(fit_obj)
   expect_equal(s$log_likelihood, fit_obj[["log_likelihood"]])
-  expect_equal(s$rmse,           fit_obj[["rmse"]])
-  expect_equal(s$nobs,           fit_obj[["nobs"]])
-  expect_equal(s$convergence,    fit_obj[["convergence"]])
-  expect_equal(s$method,         fit_obj[["method"]])
+  expect_equal(s$rmse, fit_obj[["rmse"]])
+  expect_equal(s$nobs, fit_obj[["nobs"]])
+  expect_equal(s$convergence, fit_obj[["convergence"]])
+  expect_equal(s$method, fit_obj[["method"]])
 })
 
 test_that("summary.fit_affectOU level argument propagates to CI columns", {
@@ -466,7 +469,7 @@ test_that("summary.fit_affectOU validates level", {
 
   expect_error(summary(fit_obj, level = 1.5), "between 0 and 1")
   expect_error(summary(fit_obj, level = 0), "between 0 and 1")
-  expect_error(summary(fit_obj, level = "a"), "single numeric value")
+  expect_error(summary(fit_obj, level = "a"), "must be a number")
 })
 
 

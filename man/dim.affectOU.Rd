@@ -7,7 +7,7 @@
 \method{dim}{affectOU}(x)
 }
 \arguments{
-\item{x}{An object of class \code{\link[=affectOU]{affectOU}}.}
+\item{x}{An object of class \code{\link{affectOU}}.}
 }
 \value{
 Integer, the dimensionality of the process.

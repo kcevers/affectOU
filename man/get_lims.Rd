@@ -4,7 +4,15 @@
 \alias{get_lims}
 \title{Calculate axis limits for multiple panels}
 \usage{
-get_lims(data, ndim, nsim, lim = NULL, share_axis = FALSE, include = NULL)
+get_lims(
+  data,
+  ndim,
+  nsim,
+  lim = NULL,
+  share_axis = FALSE,
+  include = NULL,
+  call = rlang::caller_env()
+)
 }
 \arguments{
 \item{data}{Data array}

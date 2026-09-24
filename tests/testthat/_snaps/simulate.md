@@ -80,7 +80,7 @@
       
       -- Simulation settings --
       
-      Time: 10.000 → 100.000 (burnin: 10.000)
+      Time: 10.000 → 100.000 (first 10.000 discarded)
       Time points: 901; dt: 0.1; save_at: 0.1
       Seed: 123
       
@@ -100,7 +100,7 @@
       
       -- [1m[1mSimulation settings[1m[22m --
       
-      Time: 10.000 → 100.000 (burnin: 10.000)
+      Time: 10.000 → 100.000 (first 10.000 discarded)
       Time points: 901; dt: 0.1; save_at: 0.1
       Seed: 123
       
@@ -120,7 +120,7 @@
       
       -- Simulation settings --
       
-      Time: 10.00 → 100.00 (burnin: 10.00)
+      Time: 10.00 → 100.00 (first 10.00 discarded)
       Time points: 901; dt: 0.1; save_at: 0.1
       Seed: 123
       
@@ -140,7 +140,7 @@
       
       -- [1m[1mSimulation settings[1m[22m --
       
-      Time: 10.00 → 100.00 (burnin: 10.00)
+      Time: 10.00 → 100.00 (first 10.00 discarded)
       Time points: 901; dt: 0.1; save_at: 0.1
       Seed: 123
       
@@ -160,7 +160,7 @@
       
       -- Simulation settings --
       
-      Time: 20.000 → 100.000 (burnin: 20.000)
+      Time: 20.000 → 100.000 (first 20.000 discarded)
       Time points: 801; dt: 0.1; save_at: 0.1
       Seed: 456
       
@@ -206,7 +206,7 @@
       
       -- [1m[1mSimulation settings[1m[22m --
       
-      Time: 20.000 → 100.000 (burnin: 20.000)
+      Time: 20.000 → 100.000 (first 20.000 discarded)
       Time points: 801; dt: 0.1; save_at: 0.1
       Seed: 456
       
@@ -294,7 +294,7 @@
       
       -- Simulation settings --
       
-      Time: 10.000 → 50.000 (burnin: 10.000)
+      Time: 10.000 → 50.000 (first 10.000 discarded)
       Time points: 401; dt: 0.1; save_at: 0.1
       Seed: 101
       
@@ -313,7 +313,7 @@
       
       -- [1m[1mSimulation settings[1m[22m --
       
-      Time: 10.000 → 50.000 (burnin: 10.000)
+      Time: 10.000 → 50.000 (first 10.000 discarded)
       Time points: 401; dt: 0.1; save_at: 0.1
       Seed: 101
       

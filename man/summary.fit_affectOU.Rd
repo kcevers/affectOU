@@ -9,7 +9,8 @@
 \arguments{
 \item{object}{An object of class \code{\link[=fit.affectOU]{fit_affectOU}}.}
 
-\item{level}{Confidence level for intervals (default 0.95).}
+\item{level}{Confidence level for intervals: a number between 0 and 1
+(default 0.95).}
 
 \item{...}{Additional arguments (unused).}
 }

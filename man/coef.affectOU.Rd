@@ -7,13 +7,13 @@
 \method{coef}{affectOU}(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{\link[=affectOU]{affectOU}}.}
+\item{object}{An object of class \code{\link{affectOU}}.}
 
 \item{...}{Additional arguments (unused).}
 }
 \value{
 A list containing the model parameters: \code{theta}, \code{mu}, \code{gamma}, and
-\code{sigma}. For 1D models, these are returned as numeric scalars. For
+\code{sigma}. For 1D models, these are returned as single numbers. For
 multivariate models, they are returned as matrices.
 }
 \description{

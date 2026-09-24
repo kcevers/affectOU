@@ -10,7 +10,7 @@
 
 \item{by_dim}{Logical; plot each dimension in separate panel?}
 
-\item{palette}{Color palette. Should be one of \code{\link[grDevices:palettes]{grDevices::hcl.pals()}}.}
+\item{palette}{Color palette. Should be one of \code{\link[grDevices:hcl.pals]{grDevices::hcl.pals()}}.}
 
 \item{alpha}{Alpha transparency for colors (0 = transparent, 1 = opaque)}
 
@@ -39,6 +39,10 @@
 \code{"center"}, \code{"none"}). Set to \code{"none"} to hide legend.}
 
 \item{...}{Additional graphical parameters}
+
+\item{call}{Environment used to report errors. Relevant only when
+calling this function from another function, so that errors name the
+function the user called.}
 }
 \description{
 Plot parameter documentation

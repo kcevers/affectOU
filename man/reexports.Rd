@@ -13,6 +13,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{generics}{\code{\link[generics]{equation}}, \code{\link[generics]{fit}}}
+  \item{generics}{\code{\link[generics:equation]{equation()}}, \code{\link[generics:fit]{fit()}}}
 }}
 

@@ -84,8 +84,8 @@ The [`update()`](../reference/update.affectOU.html) function can be used to modi
 model_2d <- update(
   model_2d,
   theta = diag(c(0.5, 0.3)), # Different regulation speeds
-  mu = c(0, 1),              # Different baselines
-  sigma = diag(c(1, 0.5))   # Different noise levels
+  mu = c(0, 1), # Different baselines
+  sigma = diag(c(1, 0.5)) # Different noise levels
 )
 
 model_2d
@@ -138,10 +138,10 @@ Simulations can be customized to fit one's needs, specifically by changing the a
 ```{r simulate-advanced}
 sim <- simulate(
   model,
-  nsim = 1, 
-  dt = 0.01, 
-  stop = 100, 
-  save_at = 0.1, 
+  nsim = 1,
+  dt = 0.01,
+  stop = 100,
+  save_at = 0.1,
   seed = 42
 )
 
@@ -303,7 +303,7 @@ fitted
 plot(fitted, type = "residuals")
 ```
 
-See [`plot()`](../reference/plot.fit.affectOU.html) for more details on available diagnostics and their interpretations.
+See [`plot()`](../reference/plot.fit_affectOU.html) for more details on available diagnostics and their interpretations.
 
 ## Extract Equation
 

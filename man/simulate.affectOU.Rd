@@ -8,7 +8,7 @@
   object,
   nsim = 1,
   seed = NULL,
-  initial_state = NULL,
+  initial = NULL,
   dt = 0.01,
   stop = 100,
   save_at = dt,
@@ -18,21 +18,27 @@
 \arguments{
 \item{object}{An \code{affectOU} model object.}
 
-\item{nsim}{Number of replications to simulate.}
+\item{nsim}{How many independent trajectories to simulate. A whole number of
+at least 1.}
 
-\item{seed}{Random seed for reproducibility.}
+\item{seed}{The random seed, so a simulation can be reproduced. A whole
+number, or \code{NULL} to leave the random state alone.}
 
-\item{initial_state}{Optional initial state vector. If \code{NULL}, defaults to a
-draw from the stationary distribution (if stable) or the attractor location
-\code{mu} (if non-stable).}
+\item{initial}{The affect value each trajectory starts from. A single
+number, or a vector with one element per dimension. If \code{NULL}, defaults
+to a draw from the stationary distribution (for stable systems) or the
+attractor location \code{mu} (for non-stable systems).}
 
-\item{dt}{Time step for Euler-Maruyama discretization (smaller = more
-accurate).}
+\item{dt}{The time step the simulation advances by, for the Euler-Maruyama
+discretization (smaller = more accurate). Must be larger than 0.}
 
-\item{stop}{Total simulation time.}
+\item{stop}{How long the simulated period lasts, in time units. Must be
+larger than 0.}
 
-\item{save_at}{Time interval at which to save simulated data; used to
-linearly interpolate results. Useful for reducing output size.}
+\item{save_at}{The time interval at which simulated data is saved, in time units; used to
+linearly interpolate results. Useful for reducing output size. Must be at
+least \code{dt}, because states are only computed every \code{dt} time units, and at
+most \code{stop}, or nothing would be recorded.}
 
 \item{...}{Additional arguments (unused).}
 }
@@ -61,7 +67,7 @@ summary(sim)
 head(sim)
 
 # Specify initial state
-sim <- simulate(model, initial_state = c(1, -1))
+sim <- simulate(model, initial = c(1, -1))
 plot(sim)
 
 # Simulate for a longer time with coarser saving interval

@@ -15,21 +15,26 @@
 )
 }
 \arguments{
-\item{object}{An object of class \code{\link[=affectOU]{affectOU}}.}
+\item{object}{An object of class \code{\link{affectOU}}.}
 
-\item{ndim}{Optional. New dimensionality of the affect process.}
+\item{ndim}{Optional. New number of affect dimensions modelled.}
 
-\item{theta}{Optional. New attractor strength (scalar or matrix).}
+\item{theta}{Optional. New value for how quickly affect returns to baseline
+(a single number or a matrix).}
 
-\item{mu}{Optional. New attractor location (scalar or vector).}
+\item{mu}{Optional. New baseline affect the process returns to (a single
+number or a vector).}
 
-\item{gamma}{Optional. New diffusion coefficient (scalar or lower triangular
-matrix). Only \code{gamma} or \code{sigma} can be specified, not both. If \code{sigma} is
-provided, \code{gamma} is computed via Cholesky decomposition.}
+\item{gamma}{Optional. New value for how strongly affect responds to ongoing
+random fluctuation (a single number or a lower triangular matrix). Specify
+either \code{gamma} or \code{sigma}, not both. If \code{sigma} is provided, \code{gamma} is
+computed via Cholesky decomposition.}
 
-\item{sigma}{Optional. New noise covariance (scalar or positive semi-definite
-matrix). Only \code{gamma} or \code{sigma} can be specified, not both. If \code{gamma} is
-provided, \code{sigma} is computed as \code{gamma \%*\% t(gamma)}.}
+\item{sigma}{Optional. New noise covariance: how much random fluctuation
+drives each dimension and how those fluctuations move together (a single
+number or a symmetric, positive semi-definite matrix). Specify either
+\code{gamma} or \code{sigma}, not both. If \code{gamma} is provided, \code{sigma} is computed
+as \code{gamma \%*\% t(gamma)}.}
 
 \item{...}{Additional arguments (unused)}
 }

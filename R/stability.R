@@ -18,15 +18,15 @@ stability <- function(object, ...) {
 #' Classify the dynamics and stability of an Ornstein-Uhlenbeck model
 #' based on eigenvalue analysis of the drift matrix \eqn{\Theta}.
 #'
-#' Note that although typically, a system is stable if all its eigenvalues have 
-#' negative real parts, due to the parameterization of the OU process, stability 
+#' Note that although typically, a system is stable if all its eigenvalues have
+#' negative real parts, due to the parameterization of the OU process, stability
 #' is determined by *positive* real parts:
 #'
 #' \deqn{dX(t) = \Theta(\mu - X(t))dt + \Gamma dW(t)}
 #'
-#' As \eqn{\Theta} is multiplied by the negative of the state variable, positive 
-#' eigenvalues indicate that deviations from the attractor decay over time, 
-#' leading to a stable system. Conversely, negative eigenvalues indicate that 
+#' As \eqn{\Theta} is multiplied by the negative of the state variable, positive
+#' eigenvalues indicate that deviations from the attractor decay over time,
+#' leading to a stable system. Conversely, negative eigenvalues indicate that
 #' deviations grow over time, leading to an unstable system.
 #'
 #'
@@ -243,7 +243,7 @@ print.stability_affectOU <- function(x, digits = 3, ...) {
 
 #' Classify dynamics type based on theta (1D case)
 #'
-#' For a single dimension, classifies the dynamics as "stable node", 
+#' For a single dimension, classifies the dynamics as "stable node",
 #' "random walk", or "unstable node" based on the value of theta compared to a numerical
 #' tolerance.
 #'
@@ -307,4 +307,3 @@ classify_dynamics <- function(theta, eigenvalues, ndim, tol = 1e-10) {
     system = system
   )
 }
-

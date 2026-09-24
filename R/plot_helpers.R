@@ -50,7 +50,13 @@ get_plot_params <- function(specific = list(), user = list()) {
 #' @return Modified simulation object
 #' @noRd
 prep_sim <- function(sim, which_dim, which_sim,
-                     max_ndim = NULL, max_nsim = NULL) {
+                     max_ndim = NULL, max_nsim = NULL,
+                     call = rlang::caller_env()) {
+  check_model_class(
+    sim, "simulate_affectOU", "a simulation from {.fun simulate}", "x",
+    call = call
+  )
+
   # Unpack sim object
   data <- sim[["data"]]
   times <- sim[["times"]]
@@ -63,15 +69,30 @@ prep_sim <- function(sim, which_dim, which_sim,
 
   # Handle dimension selection
   if (!is.numeric(which_dim)) {
-    cli::cli_abort("{.arg which_dim} must be a numeric vector of dimension indices.")
-  }
-
-  if (!is.null(max_ndim) && length(which_dim) > max_ndim) {
-    cli::cli_abort("Number of selected dimensions ({length(which_dim)}) exceeds maximum allowed ({max_ndim}).")
+    rlang::stop_input_type(
+      which_dim, "a numeric vector of dimension indices",
+      arg = "which_dim", call = call
+    )
   }
 
   if (any(which_dim < 1) || any(which_dim > ndim)) {
-    cli::cli_abort("Dimension indices in {.arg which_dim} must be between 1 and {ndim}.")
+    bad <- which_dim[which_dim < 1 | which_dim > ndim][[1]]
+    cli::cli_abort(
+      "{.arg which_dim} must contain values between 1 and {ndim}, not {bad}.",
+      call = call,
+      class = "affectOU_error_which_dim_out_of_range"
+    )
+  }
+
+  if (!is.null(max_ndim) && length(which_dim) > max_ndim) {
+    cli::cli_abort(
+      paste0(
+        "{.arg which_dim} must select at most {max_ndim} dimension{?s}, ",
+        "not {length(which_dim)}."
+      ),
+      call = call,
+      class = "affectOU_error_too_many_dims"
+    )
   }
 
   data <- data[, which_dim, , drop = FALSE]
@@ -85,18 +106,33 @@ prep_sim <- function(sim, which_dim, which_sim,
 
   # Handle simulation selection
   if (!is.numeric(which_sim)) {
-    cli::cli_abort("{.arg which_sim} must be a numeric vector of simulation indices.")
+    rlang::stop_input_type(
+      which_sim, "a numeric vector of simulation indices",
+      arg = "which_sim", call = call
+    )
   }
 
   # Sort and deduplicate (so max_nsim reflects distinct sims)
   which_sim <- sort(unique(which_sim))
 
-  if (!is.null(max_nsim) && length(which_sim) > max_nsim) {
-    cli::cli_abort("Number of selected simulations ({length(which_sim)}) exceeds maximum allowed ({max_nsim}).")
+  if (any(which_sim < 1) || any(which_sim > nsim)) {
+    bad <- which_sim[which_sim < 1 | which_sim > nsim][[1]]
+    cli::cli_abort(
+      "{.arg which_sim} must contain values between 1 and {nsim}, not {bad}.",
+      call = call,
+      class = "affectOU_error_which_sim_out_of_range"
+    )
   }
 
-  if (any(which_sim < 1) || any(which_sim > nsim)) {
-    cli::cli_abort("Simulation indices in {.arg which_sim} must be between 1 and {nsim}.")
+  if (!is.null(max_nsim) && length(which_sim) > max_nsim) {
+    cli::cli_abort(
+      paste0(
+        "{.arg which_sim} must select at most {max_nsim} simulation{?s}, ",
+        "not {length(which_sim)}."
+      ),
+      call = call,
+      class = "affectOU_error_too_many_sims"
+    )
   }
 
   data <- data[, , which_sim, drop = FALSE]
@@ -162,7 +198,8 @@ get_valid_args <- function(fun, include_par = TRUE) {
 #'
 #' @return List with nrow and ncol
 #' @keywords internal
-get_layout <- function(n, P, user_args = list(), by_dim = TRUE) {
+get_layout <- function(n, P, user_args = list(), by_dim = TRUE,
+                       call = rlang::caller_env()) {
   if (!by_dim) {
     nrow <- 1
     ncol <- 1
@@ -189,7 +226,12 @@ get_layout <- function(n, P, user_args = list(), by_dim = TRUE) {
 
   if (nrow * ncol < n) {
     cli::cli_abort(
-      "Layout ({nrow} x {ncol} = {nrow * ncol} panels) is smaller than required ({n})."
+      c(
+        "{.arg layout} must provide at least {n} panel{?s}.",
+        "x" = "A {nrow} x {ncol} layout provides {nrow * ncol}."
+      ),
+      call = call,
+      class = "affectOU_error_layout_too_small"
     )
   }
 
@@ -303,13 +345,19 @@ add_panel_legend <- function(position = "topright",
 #' @return List of lim vectors
 #' @keywords internal
 get_lims <- function(data, ndim, nsim, lim = NULL,
-                     share_axis = FALSE, include = NULL) {
+                     share_axis = FALSE, include = NULL,
+                     call = rlang::caller_env()) {
   # If user provided lim, use it (replicated if single vector)
   if (!is.null(lim)) {
     if (is.list(lim)) {
       if (length(lim) != ndim) {
         cli::cli_abort(
-          "Length of {.arg lim} list ({length(lim)}) does not match number of dimensions ({ndim})."
+          c(
+            "{.arg lim} must have one element per dimension.",
+            "x" = "{.arg lim} has {length(lim)} element{?s} and the model has {ndim} dimension{?s}."
+          ),
+          call = call,
+          class = "affectOU_error_lim_length"
         )
       }
 
@@ -409,7 +457,9 @@ generate_shades <- function(color, n, min_alpha = 0.3, max_alpha = 1) {
 #' @return Integer vector of length \code{nsim}.
 #' @keywords internal
 assign_sim_lty <- function(nsim, n_lty = 5L) {
-  if (nsim <= n_lty) return(seq_len(nsim))
+  if (nsim <= n_lty) {
+    return(seq_len(nsim))
+  }
   group_size <- ceiling(nsim / n_lty)
   pmin(ceiling(seq_len(nsim) / group_size), n_lty)
 }
@@ -430,13 +480,18 @@ assign_sim_lty <- function(nsim, n_lty = 5L) {
 #' @keywords internal
 sim_legend_entries <- function(nsim, lty_vec, col_sim, lwd = 2,
                                sim_ids = seq_len(nsim)) {
-  if (nsim <= 1L) return(NULL)
+  if (nsim <= 1L) {
+    return(NULL)
+  }
   groups <- sort(unique(lty_vec))
   labels <- vapply(groups, function(k) {
     pos <- which(lty_vec == k)
     ids <- sim_ids[pos]
-    if (length(ids) == 1L) paste0("Sim ", ids)
-    else                    paste0("Sim ", min(ids), "\u2013", max(ids))
+    if (length(ids) == 1L) {
+      paste0("Sim ", ids)
+    } else {
+      paste0("Sim ", min(ids), "\u2013", max(ids))
+    }
   }, character(1L))
   # Representative colour: most opaque (last) sim in each group
   rep_cols <- vapply(groups, function(k) {

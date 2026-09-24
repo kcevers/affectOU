@@ -7,14 +7,17 @@
 \method{fit}{affectOU}(object, data, times = NULL, method = "mle", start = NULL, ...)
 }
 \arguments{
-\item{object}{An object of class \code{\link[=affectOU]{affectOU}}.}
+\item{object}{An object of class \code{\link{affectOU}}.}
 
-\item{data}{Numeric vector of observed affect values.}
+\item{data}{A numeric vector of observed affect values. Must contain at
+least 2 finite observations.}
 
-\item{times}{Numeric vector of observation times.
+\item{times}{A numeric vector of observation times, the same length as
+\code{data} and strictly increasing, since observations are ordered in time
+with no repeated time points. If \code{NULL}, unit spacing is assumed.
 If \code{NULL}, defaults to equally spaced times: 0, 1, 2, …}
 
-\item{method}{Character string specifying estimation method.
+\item{method}{A single string naming the estimation method.
 Currently only \code{"mle"} (i.e., maximum likelihood estimation)
 is supported.}
 

@@ -21,6 +21,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Kyra Caitlin Evers \email{kyra.c.evers@gmail.com} (\href{https://orcid.org/0000-0001-6890-3482}{ORCID}) [copyright holder]
   \item Niels Vanhasbroeck \email{niels.vanhasbroeck@gmail.com} (\href{https://orcid.org/0000-0002-0056-3183}{ORCID})
 }
 

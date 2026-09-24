@@ -11,7 +11,7 @@
 #'   \item \eqn{\mathbf{\mu} = \begin{pmatrix} 0 \\ 0 \end{pmatrix}} is the equilibrium mean vector
 #'   \item \eqn{\mathbf{\Gamma} = \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix}} is the diffusion matrix
 #'   \item \eqn{\mathbf{W}_t} is a two-dimensional Wiener process
-#' } 
+#' }
 #' @concept simulate
 #' @format An object of class [`simulate_affectOU`][simulate.affectOU()] containing simulated trajectories from the specified Ornstein-Uhlenbeck process.
 "simpaper"

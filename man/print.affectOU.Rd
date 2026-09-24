@@ -7,7 +7,7 @@
 \method{print}{affectOU}(x, digits = 3, max_dim = 10, ...)
 }
 \arguments{
-\item{x}{An object of class \code{\link[=affectOU]{affectOU}}.}
+\item{x}{An object of class \code{\link{affectOU}}.}
 
 \item{digits}{Number of digits to display.}
 

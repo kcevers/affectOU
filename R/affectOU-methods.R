@@ -1,10 +1,16 @@
 #' @export
 plot.affectOU <- function(x, ...) {
-  cli::cli_abort("Plotting an {.cls affectOU} model is not supported. Simulate data with {.fn simulate} and plot the result.")
+  cli::cli_abort(
+    c(
+      "{.fun plot} is not supported for an {.cls affectOU} model.",
+      "i" = "Simulate data with {.fun simulate} and plot the result?"
+    ),
+    class = "affectOU_error_plot_unsupported"
+  )
 }
 
 #' Extract dimensionality
-#' 
+#'
 #' Extract the number of dimensions of an affect Ornstein-Uhlenbeck (OU) model.
 #'
 #' @param x An object of class [`affectOU`][affectOU()].
@@ -89,7 +95,7 @@ print.affectOU <- function(x, digits = 3, max_dim = 10, ...) {
 #' @param object An object of class [`affectOU`][affectOU()].
 #' @param ... Additional arguments (unused).
 #' @return A list containing the model parameters: `theta`, `mu`, `gamma`, and
-#' `sigma`. For 1D models, these are returned as numeric scalars. For
+#' `sigma`. For 1D models, these are returned as single numbers. For
 #' multivariate models, they are returned as matrices.
 #'
 #' @export
@@ -119,15 +125,20 @@ coef.affectOU <- function(object, ...) {
 #' Modify the parameters of an Ornstein-Uhlenbeck (OU) model.
 #'
 #' @param object An object of class [`affectOU`][affectOU()].
-#' @param ndim Optional. New dimensionality of the affect process.
-#' @param theta Optional. New attractor strength (scalar or matrix).
-#' @param mu Optional. New attractor location (scalar or vector).
-#' @param gamma Optional. New diffusion coefficient (scalar or lower triangular
-#'   matrix). Only `gamma` or `sigma` can be specified, not both. If `sigma` is 
-#'   provided, `gamma` is computed via Cholesky decomposition.
-#' @param sigma Optional. New noise covariance (scalar or positive semi-definite
-#'   matrix). Only `gamma` or `sigma` can be specified, not both. If `gamma` is 
-#'   provided, `sigma` is computed as `gamma %*% t(gamma)`.
+#' @param ndim Optional. New number of affect dimensions modelled.
+#' @param theta Optional. New value for how quickly affect returns to baseline
+#'   (a single number or a matrix).
+#' @param mu Optional. New baseline affect the process returns to (a single
+#'   number or a vector).
+#' @param gamma Optional. New value for how strongly affect responds to ongoing
+#'   random fluctuation (a single number or a lower triangular matrix). Specify
+#'   either `gamma` or `sigma`, not both. If `sigma` is provided, `gamma` is
+#'   computed via Cholesky decomposition.
+#' @param sigma Optional. New noise covariance: how much random fluctuation
+#'   drives each dimension and how those fluctuations move together (a single
+#'   number or a symmetric, positive semi-definite matrix). Specify either
+#'   `gamma` or `sigma`, not both. If `gamma` is provided, `sigma` is computed
+#'   as `gamma %*% t(gamma)`.
 #' @param ... Additional arguments (unused)
 #'
 #' @return Updated [affectOU] object
@@ -151,15 +162,19 @@ update.affectOU <- function(object,
                             gamma = NULL,
                             sigma = NULL,
                             ...) {
+  call <- rlang::current_env()
+
+  check_model_class(object, "affectOU", "an <affectOU> model", "object", call = call)
+
+  # Handle gamma/sigma: prefer new values, fall back to existing gamma
+  if (!is.null(gamma) && !is.null(sigma)) {
+    abort_gamma_sigma_both(call)
+  }
+
   # Use existing values as defaults
   new_ndim <- if (is.null(ndim)) object$ndim else ndim
   new_theta <- if (is.null(theta)) object$parameters$theta else theta
   new_mu <- if (is.null(mu)) object$parameters$mu else mu
-
-  # Handle gamma/sigma: prefer new values, fall back to existing gamma
-  if (!is.null(gamma) && !is.null(sigma)) {
-    cli::cli_abort("Specify either {.arg gamma} or {.arg sigma}, not both.")
-  }
 
   if (is.null(gamma) && is.null(sigma)) {
     new_gamma <- object$parameters$gamma
@@ -172,13 +187,23 @@ update.affectOU <- function(object,
     new_sigma <- sigma
   }
 
-  # Create new model
-  affectOU(
+  # Validate here, with this function's `call`, so an error raised by a value
+  # the user passed to `update()` does not name `affectOU()`.
+  args <- validate_model_args(
     ndim = new_ndim,
     theta = new_theta,
     mu = new_mu,
     gamma = new_gamma,
-    sigma = new_sigma
+    sigma = new_sigma,
+    call = call
+  )
+
+  # Create new model
+  affectOU(
+    ndim = args$ndim,
+    theta = args$theta,
+    mu = args$mu,
+    gamma = args$gamma
   )
 }
 
@@ -245,10 +270,10 @@ extract_noise_structure <- function(sigma, tol = 1e-10) {
 
 #' Summarize an Ornstein-Uhlenbeck affect model
 #'
-#' Summarize the dynamics and stationary distribution of an Ornstein-Uhlenbeck 
-#' affect model. In the case of multi-dimensional models, additional information 
-#' about coupling and noise structure is provided. For more details, see 
-#' [`stability()`][stability.affectOU()] and 
+#' Summarize the dynamics and stationary distribution of an Ornstein-Uhlenbeck
+#' affect model. In the case of multi-dimensional models, additional information
+#' about coupling and noise structure is provided. For more details, see
+#' [`stability()`][stability.affectOU()] and
 #' [`stationary()`][stationary.affectOU()].
 #'
 #' @param object An `affectOU` model object
@@ -357,7 +382,6 @@ print.summary_affectOU <- function(x, digits = 3, max_dim = 20, ...) {
   cli::cli_h2("Stationary distribution")
 
   if (stab$is_stable) {
-
     if (ndim == 1) {
       cli::cli_text("Mean: {round(stat$mean, digits)}")
       cli::cli_text("SD: {round(stat$sd, digits)}")
@@ -369,7 +393,6 @@ print.summary_affectOU <- function(x, digits = 3, max_dim = 20, ...) {
     }
   } else {
     cli::cli_text("Does not exist (system is not stable).")
-
   }
 
   # --- Structure (multivariate only) ---
@@ -415,7 +438,7 @@ print.summary_affectOU <- function(x, digits = 3, max_dim = 20, ...) {
     cli::cli_text("Noise: {noise_text}")
   }
 
-  cli::cli_inform(c("i"= "Use {.fn stability} and {.fn stationary} for more details."))
+  cli::cli_inform(c("i" = "Use {.fn stability} and {.fn stationary} for more details."))
 
   invisible(x)
 }

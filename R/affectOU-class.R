@@ -2,38 +2,38 @@
 
 #' Create Ornstein-Uhlenbeck affect model
 #'
-#' Create a model object representing an Ornstein-Uhlenbeck (OU) process for 
+#' Create a model object representing an Ornstein-Uhlenbeck (OU) process for
 #' affect dynamics. Both unidimensional and multidimensional models are supported.
 #'
-#' The OU is a continuous-time stochastic differential equation model that, in 
+#' The OU is a continuous-time stochastic differential equation model that, in
 #' its multivariate variant, can be written down as follows:
-#' 
+#'
 #' \deqn{d\mathbf{X}(t) = \mathbf{\Theta} (\mathbf{\mu} - \mathbf{X}(t))dt + \mathbf{\Gamma} d\mathbf{W}(t)}
-#' 
+#'
 #' which can be simplified in the one-dimensional case to:
-#' 
+#'
 #' \deqn{dX(t) = \theta (\mu - X(t))dt + \gamma dW(t)}
 #'
 #' where:
 #' - \eqn{\mathbf{X}(t)} represents the affective state at time \eqn{t};
-#' - \eqn{\mathbf{\Theta}} (theta) represents the drift matrix, governing the 
+#' - \eqn{\mathbf{\Theta}} (theta) represents the drift matrix, governing the
 #' rate at which affect returns to its baseline;
 #' - \eqn{\mathbf{\mu}} (mu) represents the location of the baseline or attractor;
-#' - \eqn{\mathbf{\Gamma}} (gamma) is a lower-triangular matrix governing the 
+#' - \eqn{\mathbf{\Gamma}} (gamma) is a lower-triangular matrix governing the
 #' size of the stochastic diffusion;
-#' - \eqn{\mathbf{W}(t)} represents the Wiener process, adding randomness to the 
+#' - \eqn{\mathbf{W}(t)} represents the Wiener process, adding randomness to the
 #' system.
-#' 
-#' Using the matrix \eqn{\mathbf{\Gamma}}, one can derive the stationary 
-#' covariance matrix \eqn{\mathbf{\Sigma}} for the system through using 
-#' \eqn{\mathbf{\Gamma}} as the basis for the Cholesky decomposition and solving 
+#'
+#' Using the matrix \eqn{\mathbf{\Gamma}}, one can derive the stationary
+#' covariance matrix \eqn{\mathbf{\Sigma}} for the system through using
+#' \eqn{\mathbf{\Gamma}} as the basis for the Cholesky decomposition and solving
 #' the Lyapunov equation, namely:
-#' 
+#'
 #' \deqn{\mathbf{\Gamma} \mathbf{\Gamma}^T = \mathbf{\Theta} \mathbf{\Sigma} + \mathbf{\Sigma} \mathbf{\Theta}^T}
 #'
 #' In the multidimensional case, the off-diagonal elements of the drift matrix
 #' \eqn{\mathbf{\Theta}} determine the temporal coupling between the different
-#' variables contained in \eqn{\mathbf{X}}, specifying how these variables 
+#' variables contained in \eqn{\mathbf{X}}, specifying how these variables
 #' co-evolve over time.
 #'
 #' @references
@@ -41,31 +41,42 @@
 #' A hierarchical latent stochastic differential equation model for
 #' affective dynamics. Psychological Methods, 16(4), 468-490.
 #'
-#' @param ndim Dimensionality of the affect process. Defaults to 1 (univariate). 
-#' Only needs to be specified if it cannot be inferred from the dimensions of 
-#' the other parameters.
-#' @param theta Attractor strength (rate of return to baseline).
-#'   For 1D: positive scalar. For multidimensional: square matrix.
-#' @param mu Attractor location (baseline affect or set point).
-#'   For 1D: scalar. For multidimensional: vector.
-#'   For non-stationary models: when \eqn{\theta < 0}, the process is pushed
-#'   away from \eqn{\mu} rather than toward it; when \eqn{\theta \approx 0},
-#'   \eqn{\mu} has no meaningful influence on the trajectory.
-#' @param gamma Diffusion coefficient (multiplies \eqn{dW(t)} in the SDE).
-#'   For 1D: positive scalar. For multidimensional: lower triangular matrix
-#'   (the Cholesky factor of \eqn{\Sigma}). Specifying both `gamma` and
-#'   `sigma` is an error. Most users should prefer specifying `sigma` directly;
-#'   `gamma` is available for advanced users who want explicit control over the
-#'   Cholesky factorisation.
-#' @param sigma Noise covariance matrix (\eqn{\Sigma = \Gamma\Gamma^\top}).
-#'   For 1D: positive scalar (variance). For multidimensional: positive
-#'   semi-definite matrix. Off-diagonal elements represent correlated noise
-#'   between dimensions. This is the recommended way to specify noise
-#'   structure. Specifying both `gamma` and `sigma` is an error.
+#' @param ndim The number of affect dimensions modelled. Defaults to 1
+#'   (univariate). Only needs to be specified if it cannot be inferred from the
+#'   dimensions of the other parameters. Must be a whole number of at least 1.
+#' @param theta How quickly affect returns to baseline -- low values mean
+#'   feelings linger (inertia or rumination). Formally the attractor strength,
+#'   or drift matrix. For 1D: a single number. For multidimensional: a square
+#'   matrix, whose off-diagonal elements set the temporal coupling between
+#'   dimensions. When `theta < 0`, the model is non-stationary: the process is
+#'   repelled from `mu` rather than toward it; when `theta \approx 0`, the
+#'   model is a random walk and `mu` has no meaningful influence on the
+#'   trajectory.
+#' @param mu The baseline affect the process returns to -- a person's typical
+#'   mood. Formally the attractor location. For 1D: a single number. For
+#'   multidimensional: a vector with one element per dimension.
+#' @param gamma How strongly affect responds to ongoing random fluctuation.
+#'   Formally the diffusion coefficient (multiplies \eqn{dW(t)} in the SDE).
+#'   For 1D: a single number. For multidimensional: a lower triangular matrix
+#'   (the Cholesky factor of \eqn{\Sigma}); it must be lower triangular because
+#'   it is the square root of a covariance matrix. Specify either `gamma` or
+#'   `sigma`, not both: each determines the other. Most users should prefer
+#'   specifying `sigma` directly; `gamma` is available for advanced users who
+#'   want explicit control over the Cholesky factorisation.
+#' @param sigma How much random fluctuation drives each affect dimension, and
+#'   how those fluctuations are correlated. Formally the noise covariance matrix
+#'   (\eqn{\Sigma = \Gamma\Gamma^\top}). For 1D: a single number, the variance,
+#'   which cannot be negative. For multidimensional: a symmetric, positive
+#'   semi-definite matrix -- symmetric because the covariance between two
+#'   dimensions is the same in either direction, and positive semi-definite
+#'   because otherwise some combination of dimensions would have a negative
+#'   variance. Off-diagonal elements represent correlated noise between
+#'   dimensions. This is the recommended way to specify noise structure.
+#'   Specify either `gamma` or `sigma`, not both.
 #'
 #' @return
 #' An object of class [`affectOU`], representing a univariate or multivariate
-#' Ornstein–Uhlenbeck affect regulation model. The object is a list with the 
+#' Ornstein–Uhlenbeck affect regulation model. The object is a list with the
 #' following components:
 #'
 #' \describe{
@@ -109,7 +120,14 @@
 #' # 1D model
 #' model_1d <- affectOU(theta = 0.5, mu = 0, sigma = 1)
 #' summary(model_1d)
-#' coef(model_1d)
+#'
+#' # Simulate trajectory
+#' sim <- simulate(model_1d)
+#' plot(sim)
+#'
+#' # Simulate from a different initial state and a shorter period
+#' sim <- simulate(model_1d, initial = 1, stop = 10)
+#' plot(sim)
 #'
 #' # 2D model (uncoupled)
 #' model_2d <- affectOU(
@@ -142,63 +160,35 @@ affectOU <- function(ndim = 1,
                      theta = 0.5,
                      mu = 0,
                      sigma = 1,
-                     gamma = t(chol(sigma))
-                     ) {
+                     gamma = t(chol(sigma))) {
   # --- Input validation and coercion ---
 
-  # Check gamma/sigma mutual exclusivity
+  call <- rlang::current_env()
 
+  # Check gamma/sigma mutual exclusivity
   if (!missing(sigma) && !missing(gamma) &&
     !is.null(sigma) && !is.null(gamma)) {
-    cli::cli_abort(
-      "Specify either {.arg gamma} or {.arg sigma}, not both."
-    )
+    abort_gamma_sigma_both(call)
   }
 
   if (missing(gamma) && !missing(sigma)) {
     gamma <- NULL
   }
 
-  # Infer ndim if not specified
-  if (missing(ndim) || is.null(ndim)) {
-    ndim <- infer_ndim(
-      theta = theta, mu = mu, gamma = gamma, sigma = sigma
-    )
-  }
+  args <- validate_model_args(
+    ndim = if (missing(ndim)) NULL else ndim,
+    theta = theta,
+    mu = mu,
+    gamma = gamma,
+    sigma = sigma,
+    call = call
+  )
 
-  # Validate ndim
-  if (!is.numeric(ndim) || length(ndim) != 1 || !is.finite(ndim) ||
-    ndim < 1 || ndim != floor(ndim)) {
-    cli::cli_abort("{.arg ndim} must be a positive integer (>= 1).")
-  }
-  ndim <- as.integer(ndim)
-
-  # Set defaults for parameters if NULL
-  if (is.null(theta)) theta <- diag(0.5, ndim)
-  if (is.null(mu)) mu <- rep(0, ndim)
-  if (is.null(gamma) && is.null(sigma)) gamma <- diag(1, ndim)
-
-  # Coerce and expand parameters to correct dimensions
-  theta <- coerce_to_matrix(theta, ndim, "theta")
-  mu <- coerce_to_vector(mu, ndim, "mu")
-
-  # Handle gamma/sigma: infer one from the other
-  if (!is.null(gamma)) {
-    gamma <- coerce_to_matrix(gamma, ndim, "gamma")
-    if (!is_lower_triangular(gamma)) {
-      cli::cli_abort(c(
-        "{.arg gamma} must be a lower triangular matrix.",
-        "i" = "Consider specifying {.arg sigma} (the noise covariance matrix) instead."
-      ))
-    }
-    sigma <- gamma %*% t(gamma)
-  } else {
-    sigma <- coerce_to_matrix(sigma, ndim, "sigma")
-    gamma <- compute_gamma_from_sigma(sigma, ndim)
-  }
-
-  # --- Check for valid sigma ---
-  check_sigma_values(sigma, ndim)
+  ndim <- args$ndim
+  theta <- args$theta
+  mu <- args$mu
+  gamma <- args$gamma
+  sigma <- args$sigma
 
   # Precompute stationary distribution
   is_stable <- check_stability(theta)$is_stable
@@ -244,7 +234,7 @@ affectOU <- function(ndim = 1,
   )
 
   # Final structural validation
-  validate_affectOU(model)
+  validate_affectOU(model, call = call)
 
   model
 }
@@ -294,30 +284,42 @@ new_affectOU <- function(ndim, theta, mu, gamma, sigma, stationary) {
 #' @param x Object to validate.
 #' @return The object, invisibly (if valid). Throws an error if invalid.
 #' @noRd
-validate_affectOU <- function(x) {
+validate_affectOU <- function(x, call = rlang::caller_env()) {
   # Check class
   if (!inherits(x, "affectOU")) {
-    cli::cli_abort("Object must be of class {.cls affectOU}.")
+    cli::cli_abort(
+      "Object must be of class {.cls affectOU}.",
+      call = call, .internal = TRUE
+    )
   }
 
   # Check top-level structure
   required_fields <- c("parameters", "stationary", "ndim")
   missing_fields <- setdiff(required_fields, names(x))
   if (length(missing_fields) > 0) {
-    cli::cli_abort("Missing required fields: {.field {missing_fields}}.")
+    cli::cli_abort(
+      "Missing required fields: {.field {missing_fields}}.",
+      call = call, .internal = TRUE
+    )
   }
 
   # Check ndim
   ndim <- x[["ndim"]]
   if (!is.integer(ndim) || length(ndim) != 1 || ndim < 1L) {
-    cli::cli_abort("{.field ndim} must be a positive integer.")
+    cli::cli_abort(
+      "{.field ndim} must be a positive integer.",
+      call = call, .internal = TRUE
+    )
   }
 
   # Check parameters exist
   required_params <- c("theta", "mu", "gamma", "sigma")
   missing_params <- setdiff(required_params, names(x[["parameters"]]))
   if (length(missing_params) > 0) {
-    cli::cli_abort("Missing required parameters: {.field {missing_params}}.")
+    cli::cli_abort(
+      "Missing required parameters: {.field {missing_params}}.",
+      call = call, .internal = TRUE
+    )
   }
 
   # Check superfluous parameters
@@ -326,7 +328,10 @@ validate_affectOU <- function(x) {
     required_params
   )
   if (length(superfluous_params) > 0) {
-    cli::cli_warn("Superfluous parameters found: {.field {superfluous_params}}.")
+    cli::cli_abort(
+      "Unexpected parameters in the model: {.val {superfluous_params}}.",
+      call = call, .internal = TRUE
+    )
   }
 
   # Check parameter types and dimensions
@@ -337,34 +342,58 @@ validate_affectOU <- function(x) {
 
   # theta: numeric matrix, ndim x ndim
   if (!is.numeric(theta) || !is.matrix(theta)) {
-    cli::cli_abort("{.field theta} must be a numeric matrix.")
+    cli::cli_abort(
+      "{.field theta} must be a numeric matrix.",
+      call = call, .internal = TRUE
+    )
   }
   if (!all(dim(theta) == c(ndim, ndim))) {
-    cli::cli_abort("{.field theta} must be a {ndim}x{ndim} matrix.")
+    cli::cli_abort(
+      "{.field theta} must be a {ndim}x{ndim} matrix.",
+      call = call, .internal = TRUE
+    )
   }
 
   # mu: numeric vector, length ndim
   if (!is.numeric(mu) || !is.vector(mu) || length(mu) != ndim) {
-    cli::cli_abort("{.field mu} must be a numeric vector of length {ndim}.")
+    cli::cli_abort(
+      "{.field mu} must be a numeric vector of length {ndim}.",
+      call = call, .internal = TRUE
+    )
   }
 
   # gamma: numeric matrix, ndim x ndim, lower triangular
   if (!is.numeric(gamma) || !is.matrix(gamma)) {
-    cli::cli_abort("{.field gamma} must be a numeric matrix.")
+    cli::cli_abort(
+      "{.field gamma} must be a numeric matrix.",
+      call = call, .internal = TRUE
+    )
   }
   if (!all(dim(gamma) == c(ndim, ndim))) {
-    cli::cli_abort("{.field gamma} must be a {ndim}x{ndim} matrix.")
+    cli::cli_abort(
+      "{.field gamma} must be a {ndim}x{ndim} matrix.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is_lower_triangular(gamma)) {
-    cli::cli_abort("{.field gamma} must be a lower triangular matrix.")
+    cli::cli_abort(
+      "{.field gamma} must be a lower triangular matrix.",
+      call = call, .internal = TRUE
+    )
   }
 
   # sigma: numeric matrix, ndim x ndim
   if (!is.numeric(sigma) || !is.matrix(sigma)) {
-    cli::cli_abort("{.field sigma} must be a numeric matrix.")
+    cli::cli_abort(
+      "{.field sigma} must be a numeric matrix.",
+      call = call, .internal = TRUE
+    )
   }
   if (!all(dim(sigma) == c(ndim, ndim))) {
-    cli::cli_abort("{.field sigma} must be a {ndim}x{ndim} matrix.")
+    cli::cli_abort(
+      "{.field sigma} must be a {ndim}x{ndim} matrix.",
+      call = call, .internal = TRUE
+    )
   }
 
   invisible(x)
@@ -373,58 +402,150 @@ validate_affectOU <- function(x) {
 
 # Helper functions for input processing --------------------------------------
 
+#' `gamma` and `sigma` both supplied
+#'
+#' Shared by [affectOU()] and [update.affectOU()], which each pass their own
+#' `call` so the error names the function the user typed.
+#'
+#' @noRd
+abort_gamma_sigma_both <- function(call) {
+  cli::cli_abort(
+    c(
+      "Specify either {.arg gamma} or {.arg sigma}, not both.",
+      "i" = paste(
+        "{.arg sigma} is the noise covariance matrix and {.arg gamma} is its",
+        "lower triangular square root, so supplying one determines the other."
+      )
+    ),
+    call = call,
+    class = "affectOU_error_gamma_sigma_both"
+  )
+}
+
+
+#' Validate and coerce the model parameters
+#'
+#' The single validation boundary for model parameters, shared by [affectOU()]
+#' and [update.affectOU()]. Returns the coerced parameters; everything
+#' downstream may assume they are valid.
+#'
+#' @param ndim `NULL` to infer from the other parameters.
+#' @param gamma,sigma Exactly one may be non-`NULL`; the other is derived.
+#' @param call Environment of the function the user called.
+#' @return A list with elements `ndim`, `theta`, `mu`, `gamma`, `sigma`.
+#' @noRd
+validate_model_args <- function(ndim, theta, mu, gamma, sigma, call) {
+  if (is.null(ndim)) {
+    ndim <- infer_ndim(
+      theta = theta, mu = mu, gamma = gamma, sigma = sigma, call = call
+    )
+  }
+  check_positive_whole(ndim, "ndim", call = call)
+  ndim <- as.integer(ndim)
+
+  # Set defaults for parameters if NULL
+  if (is.null(theta)) theta <- diag(0.5, ndim)
+  if (is.null(mu)) mu <- rep(0, ndim)
+  if (is.null(gamma) && is.null(sigma)) gamma <- diag(1, ndim)
+
+  theta <- coerce_to_matrix(theta, ndim, "theta", call = call)
+  mu <- coerce_to_vector(mu, ndim, "mu", call = call)
+
+  # Handle gamma/sigma: infer one from the other
+  if (!is.null(gamma)) {
+    gamma <- coerce_to_matrix(gamma, ndim, "gamma", call = call)
+    if (!is_lower_triangular(gamma)) {
+      cli::cli_abort(
+        c(
+          "{.arg gamma} must be a lower triangular matrix.",
+          "i" = paste(
+            "Supply {.arg sigma} (the noise covariance matrix) instead to have",
+            "{.arg gamma} derived from it?"
+          )
+        ),
+        call = call,
+        class = "affectOU_error_gamma_not_lower_triangular"
+      )
+    }
+    # Sigma derived this way is symmetric and positive semi-definite by
+    # construction, so it needs no further checking.
+    sigma <- gamma %*% t(gamma)
+  } else {
+    sigma <- coerce_to_matrix(sigma, ndim, "sigma", call = call)
+    check_sigma_values(sigma, ndim, call = call)
+    gamma <- compute_gamma_from_sigma(sigma, ndim)
+  }
+
+  list(ndim = ndim, theta = theta, mu = mu, gamma = gamma, sigma = sigma)
+}
+
+
 #' Infer ndim from parameters
+#'
+#' Tracks which parameter implied which dimension, so a conflict can name the
+#' two parameters that disagree.
+#'
 #' @noRd
 infer_ndim <- function(theta = NULL, mu = NULL, gamma = NULL,
-                       sigma = NULL) {
+                       sigma = NULL, call = rlang::caller_env()) {
   # Collect dimensions from all non-NULL parameters
   dims <- c()
 
-  if (!is.null(theta)) dims <- c(dims, NROW(theta))
-  if (!is.null(mu)) dims <- c(dims, length(mu))
-  if (!is.null(gamma)) dims <- c(dims, NROW(gamma))
-  if (!is.null(sigma)) dims <- c(dims, NROW(sigma))
+  if (!is.null(theta)) dims <- c(dims, theta = NROW(theta))
+  if (!is.null(mu)) dims <- c(dims, mu = length(mu))
+  if (!is.null(gamma)) dims <- c(dims, gamma = NROW(gamma))
+  if (!is.null(sigma)) dims <- c(dims, sigma = NROW(sigma))
 
   if (length(dims) == 0) {
     return(1L)
   }
 
-  unique_dims <- unique(dims[dims > 1])
+  dims <- dims[dims > 1]
+  unique_dims <- unique(unname(dims))
 
   if (length(unique_dims) == 0) {
     return(1L)
-  } else if (length(unique_dims) == 1) {
-    return(as.integer(unique_dims))
-  } else {
-    cli::cli_abort(
-      "Inconsistent dimensions: parameters suggest dimensions {.val {unique_dims}}."
-    )
   }
+  if (length(unique_dims) == 1) {
+    return(as.integer(unique_dims))
+  }
+
+  # Name the first two parameters that disagree, in argument order.
+  first <- names(dims)[[1]]
+  second <- names(dims)[dims != dims[[1]]][[1]]
+
+  cli::cli_abort(
+    c(
+      "Model parameters must all describe the same number of affect dimensions.",
+      "x" = paste0(
+        "{.arg ", first, "} implies {dims[[first]]} dimensions and ",
+        "{.arg ", second, "} implies {dims[[second]]}."
+      ),
+      "i" = "Set {.arg ndim} explicitly to choose one?"
+    ),
+    call = call,
+    class = "affectOU_error_inconsistent_ndim"
+  )
 }
 
 
 #' Coerce input to matrix of correct dimension
+#'
+#' Accepts a single number (expanded to a diagonal matrix), a vector of length
+#' `ndim` (the diagonal), or an `ndim` x `ndim` matrix.
+#'
 #' @noRd
-coerce_to_matrix <- function(x, ndim, name) {
-  if (is.null(x)) {
-    cli::cli_abort("{.arg {name}} cannot be NULL.")
-  }
+coerce_to_matrix <- function(x, ndim, name, call = rlang::caller_env(),
+                             bullet = ndim_bullet(ndim)) {
+  forms <- matrix_forms(ndim)
 
-  # Check numeric
   if (!is.numeric(x)) {
-    cli::cli_abort("{.arg {name}} must be numeric.")
+    rlang::stop_input_type(x, forms, arg = name, call = call)
   }
 
-  # Check finiteness
-  if (!all(is.finite(x))) {
-    if (ndim == 1) {
-      cli::cli_abort("{.arg {name}} must be a finite scalar.")
-    } else {
-      cli::cli_abort("{.arg {name}} must contain only finite values.")
-    }
-  }
+  check_all_finite(x, name, call = call)
 
-  # Scalar -> diagonal matrix
+  # A single number, including a 1x1 matrix, becomes a diagonal matrix
   if (length(x) == 1) {
     return(diag(as.numeric(x), ndim))
   }
@@ -434,76 +555,67 @@ coerce_to_matrix <- function(x, ndim, name) {
     return(diag(as.numeric(x), ndim))
   }
 
-  # Matrix -> check dimensions
-  if (is.matrix(x)) {
-    if (!all(dim(x) == ndim)) {
-      cli::cli_abort(
-        "{.arg {name}} must be a square matrix."
-      )
-    }
+  if (is.matrix(x) && all(dim(x) == ndim)) {
     return(x)
   }
 
-  if (ndim == 1) {
-    cli::cli_abort("{.arg {name}} must be a scalar.")
-  } else {
-    cli::cli_abort(
-      "{.arg {name}} must be a scalar, a vector of length {ndim}, or a {ndim}x{ndim} matrix."
-    )
-  }
+  cli::cli_abort(
+    c(
+      paste0(
+        "{.arg {name}} must be ",
+        if (is.matrix(x)) paste0("a ", ndim, "x", ndim, " matrix") else forms,
+        ", not {obj_shape_friendly(x)}."
+      ),
+      bullet
+    ),
+    call = call,
+    class = "affectOU_error_wrong_shape"
+  )
 }
 
 
 #' Coerce input to vector of correct length
+#'
+#' Accepts a single number (recycled) or a vector of length `ndim`.
+#'
 #' @noRd
-coerce_to_vector <- function(x, ndim, name) {
-  if (is.null(x)) {
-    cli::cli_abort("{.arg {name}} cannot be NULL.")
-  }
+coerce_to_vector <- function(x, ndim, name, call = rlang::caller_env(),
+                             bullet = ndim_bullet(ndim)) {
+  forms <- vector_forms(ndim)
 
-  # Check numeric
   if (!is.numeric(x)) {
-    cli::cli_abort("{.arg {name}} must be numeric.")
+    rlang::stop_input_type(x, forms, arg = name, call = call)
   }
 
-  # Check finiteness
-  if (!all(is.finite(x))) {
-    if (ndim == 1) {
-      cli::cli_abort("{.arg {name}} must be a finite scalar.")
-    } else {
-      cli::cli_abort("{.arg {name}} must contain only finite values.")
-    }
-  }
+  check_all_finite(x, name, call = call)
 
   # Scalar -> repeat
   if (length(x) == 1) {
     return(rep(as.numeric(x), ndim))
   }
 
-  # Vector of correct length
-  if (length(x) == ndim) {
+  if (length(x) == ndim && !is.matrix(x)) {
     return(as.numeric(x))
   }
 
-  if (ndim == 1) {
-    cli::cli_abort("{.arg {name}} must be a scalar.")
-  } else {
-    cli::cli_abort("{.arg {name}} must be a scalar or a vector of length {ndim}.")
-  }
+  cli::cli_abort(
+    c(
+      "{.arg {name}} must be {forms}, not {obj_shape_friendly(x)}.",
+      bullet
+    ),
+    call = call,
+    class = "affectOU_error_wrong_shape"
+  )
 }
 
 
 #' Compute gamma from sigma via Cholesky decomposition
+#'
+#' Assumes `sigma` has already been checked by `check_sigma_values()`.
+#'
 #' @noRd
 compute_gamma_from_sigma <- function(sigma, ndim) {
-  check_sigma_values(sigma, ndim)
-
-  # For 1D, more helpful error message
   if (ndim == 1) {
-    if (sigma[1, 1] < 0) {
-      cli::cli_abort("{.arg sigma} must be non-negative.")
-    }
-
     if (sigma[1, 1] == 0) {
       return(matrix(0, nrow = 1, ncol = 1))
     }
@@ -516,13 +628,17 @@ compute_gamma_from_sigma <- function(sigma, ndim) {
     return(matrix(0, nrow = ndim, ncol = ndim))
   }
 
-  cholesky_psd(sigma, name = "sigma")
+  cholesky_psd(sigma)
 }
 
 
 #' Lower-triangular factor for positive semi-definite matrices
+#'
+#' A pure numeric routine. Its positive semi-definiteness precondition is the
+#' caller's to check, so a failure here is a package bug, not a user error.
+#'
 #' @noRd
-cholesky_psd <- function(sigma, name = "sigma", tol = 1e-10) {
+cholesky_psd <- function(sigma, tol = 1e-10, call = rlang::caller_env()) {
   n <- nrow(sigma)
   L <- matrix(0, nrow = n, ncol = n)
 
@@ -532,7 +648,7 @@ cholesky_psd <- function(sigma, name = "sigma", tol = 1e-10) {
     diag_value <- sigma[j, j] - previous_sum
 
     if (diag_value < -tol) {
-      cli::cli_abort("{name} must be positive semi-definite.")
+      abort_not_psd(call)
     }
 
     if (diag_value <= tol) {
@@ -547,7 +663,7 @@ cholesky_psd <- function(sigma, name = "sigma", tol = 1e-10) {
           }
           off_value <- sigma[i, j] - previous_cross
           if (abs(off_value) > sqrt(tol)) {
-            cli::cli_abort("{name} must be positive semi-definite.")
+            abort_not_psd(call)
           }
         }
       }
@@ -572,29 +688,82 @@ cholesky_psd <- function(sigma, name = "sigma", tol = 1e-10) {
 }
 
 
+#' @noRd
+abort_not_psd <- function(call) {
+  cli::cli_abort(
+    "Matrix must be positive semi-definite.",
+    call = call,
+    .internal = TRUE
+  )
+}
+
+
 #' Check if a matrix is lower triangular
 #' @noRd
 is_lower_triangular <- function(x, tol = sqrt(.Machine$double.eps)) {
-  if (nrow(x) <= 1L) return(TRUE)
+  if (nrow(x) <= 1L) {
+    return(TRUE)
+  }
   upper_idx <- upper.tri(x)
   all(abs(x[upper_idx]) <= tol)
 }
 
 
-#' Check sigma is positive semi-definite
+#' Check sigma is a valid noise covariance matrix
+#'
+#' @param call Environment of the function the user called.
 #' @noRd
-check_sigma_values <- function(sigma, ndim, tol = 1e-10) {
+check_sigma_values <- function(sigma, ndim, tol = 1e-10,
+                               call = rlang::caller_env()) {
   if (!isTRUE(isSymmetric(sigma, tol = tol))) {
-    cli::cli_abort("{.arg sigma} must be symmetric.")
+    cli::cli_abort(
+      c(
+        "{.arg sigma} must be a symmetric matrix.",
+        "i" = paste(
+          "{.arg sigma} is a covariance matrix: the covariance between two",
+          "affect dimensions is the same in either direction."
+        )
+      ),
+      call = call,
+      class = "affectOU_error_sigma_not_symmetric"
+    )
   }
 
   sigma_sym <- (sigma + t(sigma)) / 2
   eig <- eigen(sigma_sym, symmetric = TRUE, only.values = TRUE)$values
-  if (any(eig < -tol)) {
-    if (ndim == 1) {
-      cli::cli_abort("{.arg sigma} must be non-negative.")
-    } else {
-      cli::cli_abort("{.arg sigma} must be positive semi-definite.")
-    }
+
+  if (!any(eig < -tol)) {
+    return(invisible(NULL))
   }
+
+  if (ndim == 1) {
+    cli::cli_abort(
+      c(
+        paste(
+          "{.arg sigma} must be a number larger than or equal to 0,",
+          "not the number {sigma[1, 1]}."
+        ),
+        "i" = paste(
+          "{.arg sigma} is the variance of the random fluctuation driving",
+          "affect, so it cannot be negative."
+        )
+      ),
+      call = call,
+      class = "affectOU_error_sigma_not_psd"
+    )
+  }
+
+  cli::cli_abort(
+    c(
+      "{.arg sigma} must be positive semi-definite.",
+      "x" = "Its smallest eigenvalue is {signif(min(eig), 2)}.",
+      "i" = paste(
+        "{.arg sigma} is the covariance matrix of the random fluctuation",
+        "driving affect; a negative eigenvalue would give some combination of",
+        "affect dimensions a negative variance."
+      )
+    ),
+    call = call,
+    class = "affectOU_error_sigma_not_psd"
+  )
 }

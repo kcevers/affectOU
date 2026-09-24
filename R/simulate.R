@@ -4,16 +4,22 @@
 #' Euler-Maruyama discretization. Handles both univariate and multivariate models.
 #'
 #' @param object An `affectOU` model object.
-#' @param nsim Number of replications to simulate.
-#' @param seed Random seed for reproducibility.
-#' @param initial_state Optional initial state vector. If `NULL`, defaults to a 
-#'   draw from the stationary distribution (if stable) or the attractor location 
-#'   `mu` (if non-stable).
-#' @param dt Time step for Euler-Maruyama discretization (smaller = more 
-#'   accurate).
-#' @param stop Total simulation time.
-#' @param save_at Time interval at which to save simulated data; used to 
-#'   linearly interpolate results. Useful for reducing output size.
+#' @param nsim How many independent trajectories to simulate. A whole number of
+#'   at least 1.
+#' @param seed The random seed, so a simulation can be reproduced. A whole
+#'   number, or `NULL` to leave the random state alone.
+#' @param initial The affect value each trajectory starts from. A single
+#'   number, or a vector with one element per dimension. If `NULL`, defaults
+#'   to a draw from the stationary distribution (for stable systems) or the
+#'   attractor location `mu` (for non-stable systems).
+#' @param dt The time step the simulation advances by, for the Euler-Maruyama
+#'   discretization (smaller = more accurate). Must be larger than 0.
+#' @param stop How long the simulated period lasts, in time units. Must be
+#'   larger than 0.
+#' @param save_at The time interval at which simulated data is saved, in time units; used to
+#'   linearly interpolate results. Useful for reducing output size. Must be at
+#'   least `dt`, because states are only computed every `dt` time units, and at
+#'   most `stop`, or nothing would be recorded.
 #' @param ... Additional arguments (unused).
 #'
 #' @importFrom stats simulate
@@ -37,51 +43,73 @@
 #' plot(sim)
 #' summary(sim)
 #' head(sim)
-#' 
+#'
 #' # Specify initial state
-#' sim <- simulate(model, initial_state = c(1, -1))
+#' sim <- simulate(model, initial = c(1, -1))
 #' plot(sim)
-#' 
+#'
 #' # Simulate for a longer time with coarser saving interval
 #' sim <- simulate(model, stop = 500, save_at = 10)
 #' plot(sim)
-#' 
+#'
 simulate.affectOU <- function(object,
                               nsim = 1,
                               seed = NULL,
-                              initial_state = NULL,
+                              initial = NULL,
                               dt = 0.01,
                               stop = 100,
                               save_at = dt,
                               ...) {
-  # Validate inputs
-  if (is.null(dt) || !is.numeric(dt) || length(dt) != 1 || dt <= 0) {
-    cli::cli_abort("{.var dt} must be a positive numeric scalar.")
-  }
+  # --- Input validation ---
+  # Every argument is checked here, at the boundary, before any work is done.
 
-  if (is.null(stop) || !is.numeric(stop) || length(stop) != 1 || stop <= 0) {
-    cli::cli_abort("{.var stop} must be a positive numeric scalar.")
-  }
+  call <- rlang::current_env()
 
-  if (is.null(save_at) || !is.numeric(save_at) || length(save_at) != 1 || save_at <= 0) {
-    cli::cli_abort("{.var save_at} must be a positive numeric scalar.")
-  }
+  check_model_class(object, "affectOU", "an <affectOU> model", "object", call = call)
+
+  check_positive_number(dt, "dt", call = call)
+  check_positive_number(stop, "stop", call = call)
+  check_positive_number(save_at, "save_at", call = call)
 
   if (save_at > stop) {
-    cli::cli_abort("{.var save_at} must be less than or equal to {.var stop}.")
+    cli::cli_abort(
+      c(
+        "{.arg save_at} must be less than or equal to {.arg stop}.",
+        "x" = "{.arg save_at} is {save_at} and {.arg stop} is {stop}.",
+        "i" = "Otherwise no time points are saved."
+      ),
+      call = call,
+      class = "affectOU_error_save_at_above_stop"
+    )
   }
 
   if (save_at < dt) {
-    cli::cli_abort("{.var save_at} must be greater than or equal to {.var dt}.")
+    cli::cli_abort(
+      c(
+        "{.arg save_at} must be greater than or equal to {.arg dt}.",
+        "x" = "{.arg save_at} is {save_at} and {.arg dt} is {dt}.",
+        "i" = paste(
+          "States are only computed every {.arg dt} time units, so they cannot",
+          "be recorded more often than that."
+        )
+      ),
+      call = call,
+      class = "affectOU_error_save_at_below_dt"
+    )
   }
 
-  if (is.null(nsim) || !is.numeric(nsim) || length(nsim) != 1 ||
-    nsim <= 0 || nsim != floor(nsim)) {
-    cli::cli_abort("{.var nsim} must be a positive integer scalar.")
+  check_positive_whole(nsim, "nsim", call = call)
+
+  if (!is.null(seed)) {
+    rlang::check_number_whole(seed, arg = "seed", call = call)
   }
 
-  if (!is.null(seed) && (!is.numeric(seed) || length(seed) != 1 || seed != floor(seed))) {
-    cli::cli_abort("{.arg seed} must be a single integer value.")
+  if (!is.null(initial)) {
+    initial <- coerce_to_vector(
+      initial, object[["ndim"]], "initial",
+      call = call,
+      bullet = gloss_bullet("initial")
+    )
   }
 
   # Set seed for reproducibility
@@ -118,11 +146,11 @@ simulate.affectOU <- function(object,
 
   # Determine how to draw initial state for each simulation
   stat <- object[["stationary"]]
-  if (is.null(initial_state)) {
+  if (is.null(initial)) {
     if (!stat[["is_stable"]]) {
       cli::cli_warn(c(
-        "!" = "System is not stable; no stationary distribution exists.",
-        "i" = "Defaulting {.arg initial_state} to {.field mu}."
+        "!" = "The system is not stable, so no stationary distribution exists.",
+        "i" = "{.arg initial} defaults to {.arg mu}."
       ))
       x0_fixed <- mu
       draw_x0 <- function() x0_fixed
@@ -138,13 +166,12 @@ simulate.affectOU <- function(object,
         x0_fixed <- stat[["mean"]]
         draw_x0 <- function() x0_fixed
       } else {
-        L <- cholesky_psd(stat[["cov"]], name = "stationary covariance")
+        L <- cholesky_psd(stat[["cov"]])
         draw_x0 <- function() stat[["mean"]] + L %*% stats::rnorm(ndim)
       }
     }
   } else {
-    initial_state <- coerce_to_vector(initial_state, ndim, "initial_state")
-    draw_x0 <- function() initial_state
+    draw_x0 <- function() initial
   }
 
   # Time vectors
@@ -228,7 +255,7 @@ simulate.affectOU <- function(object,
     seed = seed
   )
 
-  validate_simulate_affectOU(out)
+  validate_simulate_affectOU(out, call = call)
 
   out
 }
@@ -260,55 +287,94 @@ new_simulate_affectOU <- function(model, data, times, nsim, dt, stop, save_at, s
 #' Internal function to validate the structure and contents of a simulate_affectOU object.
 #' @keywords internal
 #' @noRd
-validate_simulate_affectOU <- function(x) {
+validate_simulate_affectOU <- function(x, call = rlang::caller_env()) {
   if (!inherits(x, "simulate_affectOU")) {
-    cli::cli_abort("Object must be of class {.cls simulate_affectOU}.")
+    cli::cli_abort(
+      "Object must be of class {.cls simulate_affectOU}.",
+      call = call, .internal = TRUE
+    )
   }
 
   # Check required components
   required_components <- c("model", "data", "times", "nsim", "dt", "stop", "save_at", "seed")
   missing_components <- setdiff(required_components, names(x))
   if (length(missing_components) > 0) {
-    cli::cli_abort("Missing components in {.cls simulate_affectOU} object: {paste(missing_components, collapse = ', ')}.")
+    cli::cli_abort(
+      "Missing components in {.cls simulate_affectOU} object: {paste(missing_components, collapse = ', ')}.",
+      call = call, .internal = TRUE
+    )
   }
 
   # Check components types
   if (!inherits(x[["model"]], "affectOU")) {
-    cli::cli_abort("Component {.var model} must be of class {.cls affectOU}.")
+    cli::cli_abort(
+      "Component {.var model} must be of class {.cls affectOU}.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.array(x[["data"]]) || length(dim(x[["data"]])) != 3) {
-    cli::cli_abort("Component {.var data} must be a 3-dimensional array.")
+    cli::cli_abort(
+      "Component {.var data} must be a 3-dimensional array.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x[["times"]]) || !is.vector(x[["times"]])) {
-    cli::cli_abort("Component {.var times} must be a numeric vector.")
+    cli::cli_abort(
+      "Component {.var times} must be a numeric vector.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x[["nsim"]]) || length(x[["nsim"]]) != 1 || x[["nsim"]] <= 0 || x[["nsim"]] != floor(x[["nsim"]])) {
-    cli::cli_abort("Component {.var nsim} must be a positive integer scalar.")
+    cli::cli_abort(
+      "Component {.var nsim} must be a whole number larger than 0.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x[["dt"]]) || length(x[["dt"]]) != 1 || x[["dt"]] <= 0) {
-    cli::cli_abort("Component {.var dt} must be a positive numeric scalar.")
+    cli::cli_abort(
+      "Component {.var dt} must be a single number larger than 0.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x[["stop"]]) || length(x[["stop"]]) != 1 || x[["stop"]] <= 0) {
-    cli::cli_abort("Component {.var stop} must be a positive numeric scalar.")
+    cli::cli_abort(
+      "Component {.var stop} must be a single number larger than 0.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.numeric(x[["save_at"]]) || length(x[["save_at"]]) != 1 || x[["save_at"]] <= 0) {
-    cli::cli_abort("Component {.var save_at} must be a positive numeric scalar.")
+    cli::cli_abort(
+      "Component {.var save_at} must be a single number larger than 0.",
+      call = call, .internal = TRUE
+    )
   }
   if (!is.null(x[["seed"]]) && (!is.numeric(x[["seed"]]) || length(x[["seed"]]) != 1 || x[["seed"]] != floor(x[["seed"]]))) {
-    cli::cli_abort("Component {.var seed} must be a single integer value or NULL.")
+    cli::cli_abort(
+      "Component {.var seed} must be a single integer value or NULL.",
+      call = call, .internal = TRUE
+    )
   }
 
   # Check data dimensions
   ndim <- x[["model"]][["ndim"]]
   data_dims <- dim(x[["data"]])
   if (data_dims[1] != length(x[["times"]])) {
-    cli::cli_abort("First dimension of {.var data} must match length of {.var times}.")
+    cli::cli_abort(
+      "First dimension of {.var data} must match length of {.var times}.",
+      call = call, .internal = TRUE
+    )
   }
   if (data_dims[2] != ndim) {
-    cli::cli_abort("Second dimension of {.var data} must match model {.var ndim}.")
+    cli::cli_abort(
+      "Second dimension of {.var data} must match model {.var ndim}.",
+      call = call, .internal = TRUE
+    )
   }
   if (data_dims[3] != x[["nsim"]]) {
-    cli::cli_abort("Third dimension of {.var data} must match {.var nsim}.")
+    cli::cli_abort(
+      "Third dimension of {.var data} must match {.var nsim}.",
+      call = call, .internal = TRUE
+    )
   }
 
   invisible(x)
@@ -331,9 +397,12 @@ validate_simulate_affectOU <- function(x) {
 #' sim <- simulate(model)
 #' head(sim)
 head.simulate_affectOU <- function(x, n = 6L, ...) {
-  if (is.null(n) || !is.numeric(n) || length(n) != 1 || !is.finite(n) || n <= 0) {
-    cli::cli_abort("{.var n} must be a positive integer scalar.")
-  }
+  call <- rlang::current_env()
+  check_model_class(
+    x, "simulate_affectOU", "a simulation from {.fun simulate}", "x",
+    call = call
+  )
+  check_positive_whole(n, "n", call = call)
   n <- as.integer(n)
 
   head(as.data.frame(x), n = n, ...)
@@ -355,9 +424,12 @@ head.simulate_affectOU <- function(x, n = 6L, ...) {
 #' sim <- simulate(model)
 #' tail(sim)
 tail.simulate_affectOU <- function(x, n = 6L, ...) {
-  if (is.null(n) || !is.numeric(n) || length(n) != 1 || !is.finite(n) || n <= 0) {
-    cli::cli_abort("{.var n} must be a positive integer scalar.")
-  }
+  call <- rlang::current_env()
+  check_model_class(
+    x, "simulate_affectOU", "a simulation from {.fun simulate}", "x",
+    call = call
+  )
+  check_positive_whole(n, "n", call = call)
   n <- as.integer(n)
 
   tail(as.data.frame(x), n = n, ...)
@@ -663,17 +735,18 @@ print.simulate_affectOU <- function(x, digits = 3, ...) {
 #' when the model is stationary.
 #'
 #' @param object A `simulate_affectOU` object
-#' @param burnin Time to exclude from the start of simulations (in time units,
-#'   not time points). Useful for allowing the process to reach stationarity.
-#'   Default is 0.
+#' @param discard_initial_time How much of the start to discard, so the
+#'   process has settled before it is summarised. Measured in time units,
+#'   like `stop`, and must be less than the simulated period, or no time points
+#'   would remain. Default is 0 to retain all time points.
 #' @param ... Additional arguments (unused)
 #'
 #' @return An object of class `summary_simulate_affectOU` containing:
 #'   \describe{
 #'     \item{ndim}{Number of dimensions}
 #'     \item{nsim}{Number of simulations}
-#'     \item{n_timepoints}{Number of time points used (after burnin)}
-#'     \item{burnin}{Burnin time excluded}
+#'     \item{n_timepoints}{Number of time points used after discarding}
+#'     \item{discard_initial_time}{Amount of time discarded from the start}
 #'     \item{dt}{Simulation time step}
 #'     \item{stop}{Total simulation time}
 #'     \item{save_at}{Time interval at which data was saved}
@@ -707,23 +780,39 @@ print.simulate_affectOU <- function(x, digits = 3, ...) {
 #' sim <- simulate(model, stop = 100, dt = 0.1, nsim = 10, seed = 123)
 #' summary(sim)
 #'
-#' # With burnin to exclude initial transient
-#' summary(sim, burnin = 10)
+#' # Discard the initial transient before summarising
+#' summary(sim, discard_initial_time = 10)
 #'
 #' # 2D stationary model
 #' model <- affectOU(ndim = 2, theta = diag(c(0.5, 0.3)), mu = c(1, -1))
 #' sim <- simulate(model, stop = 100, dt = 0.1, nsim = 5, seed = 456)
-#' summary(sim, burnin = 20)
-summary.simulate_affectOU <- function(object, burnin = 0, ...) {
-  # Validate burnin
-  if (is.null(burnin) || !is.numeric(burnin) || length(burnin) != 1 ||
-    !is.finite(burnin) || burnin < 0) {
-    cli::cli_abort("{.arg burnin} must be a non-negative numeric scalar.")
-  }
+#' summary(sim, discard_initial_time = 20)
+summary.simulate_affectOU <- function(object, discard_initial_time = 0, ...) {
+  # Validate arguments
+  call <- rlang::current_env()
+  check_model_class(
+    object, "simulate_affectOU", "a simulation from {.fun simulate}", "object",
+    call = call
+  )
+  rlang::check_number_decimal(
+    discard_initial_time,
+    min = 0, arg = "discard_initial_time", call = call
+  )
 
   stop_time <- object[["stop"]]
-  if (burnin >= stop_time) {
-    cli::cli_abort("{.arg burnin} must be less than simulation stop time ({stop_time}).")
+  if (discard_initial_time >= stop_time) {
+    cli::cli_abort(
+      c(
+        "{.arg discard_initial_time} must be less than the simulated period.",
+        "x" = paste(
+          "{.arg discard_initial_time} is {discard_initial_time} and the simulation",
+          "stops at {stop_time}."
+        ),
+        "i" = "No time points would remain to summarise."
+      ),
+      call = call,
+      class = "affectOU_error_discard_above_stop"
+    )
   }
 
   # Extract data and metadata
@@ -732,8 +821,8 @@ summary.simulate_affectOU <- function(object, burnin = 0, ...) {
   ndim <- object[["model"]][["ndim"]]
   nsim <- object[["nsim"]]
 
-  # Apply burnin filter
-  keep_idx <- times >= burnin
+  # Discard the start, so only the settled part is summarised
+  keep_idx <- times >= discard_initial_time
   data_filtered <- data[keep_idx, , , drop = FALSE]
   n_timepoints <- sum(keep_idx)
 
@@ -779,7 +868,7 @@ summary.simulate_affectOU <- function(object, burnin = 0, ...) {
     ndim = ndim,
     nsim = nsim,
     n_timepoints = n_timepoints,
-    burnin = burnin,
+    discard_initial_time = discard_initial_time,
     dt = object[["dt"]],
     stop = stop_time,
     save_at = object[["save_at"]],
@@ -828,10 +917,10 @@ print.summary_simulate_affectOU <- function(x, digits = 3, max_dim = 10, ...) {
   # --- Simulation settings ---
   cli::cli_h2("Simulation settings")
 
-  time_range <- if (x[["burnin"]] > 0) {
+  time_range <- if (x[["discard_initial_time"]] > 0) {
     sprintf(
-      "%.*f \u2192 %.*f (burnin: %.*f)",
-      digits, x[["burnin"]], digits, x[["stop"]], digits, x[["burnin"]]
+      "%.*f \u2192 %.*f (first %.*f discarded)",
+      digits, x[["discard_initial_time"]], digits, x[["stop"]], digits, x[["discard_initial_time"]]
     )
   } else {
     sprintf("0 \u2192 %.*f", digits, x[["stop"]])
